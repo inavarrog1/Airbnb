@@ -34,31 +34,58 @@ financieros ella misma.
 | Parámetro | Valor |
 |---|---|
 | Operación | venta · departamento |
-| Zona | polígono chico (~1–2 km²), censo completo · **URL pendiente, ver Bloqueantes** |
+| Zona | polígono de **2,56 km²**, censo completo · confirmada, ver abajo |
 | Tipologías | 2D y 3D |
 | Filtro de precio | ninguno en la URL |
 | Tope de propiedades | 500 |
 | Timeout | 10 minutos |
 | Corte natural | página con menos resultados que el máximo |
 
-**Por qué zona chica.** El box de la zona v1 medía ~3,0 × 4,4 km ≈ 13 km². A la
-densidad que reporta el taller para Las Condes (~528 propiedades/km²) eso da miles de
-avisos. Con un tope de 500 sobre ese universo, el ranking no dice *"las mejores de la
-zona"* sino *"las mejores de las primeras 500 que el portal decidió mostrar"* — y el
-orden por defecto del portal es comercial, no aleatorio. El sesgo no se ve en el
-output: se ve igual de prolijo en los dos casos.
+### Zona confirmada
+
+```
+https://www.portalinmobiliario.com/venta/departamento/_DisplayType_M_item*location_lat:-33.43399063809945*-33.40676791096829,lon:-70.62473552398681*-70.57761447601318?polygon_location=n%7E%7CjEn%7CxmLgAjb%40L%7CZj%40xJ%60Gl%5BbBhZbBjKrF%60ObFbH%60GvQjDpFpKrHlL%60GnGhC%7CG%60%40rF_FZmEMo%5Cy%40cHyDuPsJ_U%7B%5D_k%40oG_NwEcOkH%7D%5B%7DCcHk%40%7DL%5Ba%40%7DC%3FyDfC%5BcA
+```
+
+| Medida | Valor |
+|---|---|
+| Vértices del polígono | 31 |
+| **Área real del polígono** | **2,56 km²** |
+| Área del bounding box | 13,25 km² |
+| Extensión real lat | -33,42808 → -33,41268 |
+| Extensión real lon | -70,61877 → -70,58358 |
+
+**El bounding box no es la zona.** La caja que envuelve al polígono mide 13,25 km²,
+pero el polígono dibujado ocupa sólo el 19% de esa caja. Medir por el box sobreestima
+la zona por cinco veces. El área real sale de decodificar el `polygon_location`
+(polyline codificada, 31 vértices) y aplicar shoelace sobre una proyección plana local.
+
+Esto está escrito acá porque es el error que se cometió durante el diseño: se pidió
+redibujar una zona que ya cumplía el criterio.
+
+**Por qué zona chica.** Si la zona tiene miles de avisos y el tope es 500, el ranking
+no dice *"las mejores de la zona"* sino *"las mejores de las primeras 500 que el portal
+decidió mostrar"* — y el orden por defecto del portal es comercial, no aleatorio. El
+sesgo no se ve en el output: se ve igual de prolijo en los dos casos. Por eso el corte
+que se busca es **página incompleta** (se acabaron los resultados), no **tope**.
 
 **Sin filtro de precio** porque hay avisos publicados en CLP y otros en UF, así que el
 filtro del portal es poco confiable. Se trae todo y se homologa a UF en el `cargador`.
 
-**Zona v1 — descartada por tamaño.** Se guarda para saber de dónde venimos:
+### Riesgo abierto: el tope puede morder
 
-```
-https://www.portalinmobiliario.com/venta/departamento/_DisplayType_M_item*location_lat:-33.43399063809945*-33.40676791096829,lon:-70.62473552398681*-70.57761447601318?polygon_location=n%7E%7CjEn%7CxmLgAjb%40L%7CZj%40xJ%60Gl%5BbBhZbBjKrF%60ObFbH%60GvQjDpFpKrHlL%60GnGhC%7CG%60%40rF_FZmEMo%5Cy%40cHyDuPsJ_U%7B%5D_k%40oG_NwEcOkH%7D%5B%7DCcHk%40%7DL%5Ba%40%7DC%3FyDfC%5BcA
+A la densidad que cita el taller para Las Condes (~528 avisos/km²), 2,56 km² darían
+**~1.350 avisos** — por encima del tope de 500. Si eso se cumple, el `buscador` corta
+por tope y el censo queda incompleto.
 
-bounding box lat: -33.43399 → -33.40677
-bounding box lon: -70.62474 → -70.57761
-```
+**Decisión tomada: no tocar el tope todavía.** Los 528/km² son la densidad de otra
+comuna; este polígono está sobre Providencia/Ñuñoa y puede ser bastante menos. Subir
+el tope ahora sería protegerse contra una estimación con otra estimación. El conteo
+real lo da la primera corrida del `buscador`.
+
+**Qué hacer si la primera corrida corta por tope:** subir el tope al doble del conteo
+observado y el timeout a 20 min, y volver a correr. Queda anotado en el item 03 del
+backlog.
 
 ---
 
@@ -253,8 +280,8 @@ esos borradores alguien tuvo que aprobar, y para aprobar tuvo que mirar el model
 
 ## Bloqueantes abiertos
 
-1. **URL de la zona v2.** Hay que redibujar el polígono chico (~1–2 km²) y fijar la
-   URL. Depende de Isidora. Nada arranca sin esto.
+1. ~~**URL de la zona.**~~ **Resuelto el 2026-09-12** (item 01). Polígono de 2,56 km²,
+   confirmado y medido. Ver "Zona confirmada" arriba.
 2. **Gramática del HTML del portal.** Hay que verificarla el día que se construya el
    scraper, entrando a la página. Cualquier selector escrito hoy es una suposición.
    El portal responde 302 a clientes sin JavaScript; hace falta navegador headless.

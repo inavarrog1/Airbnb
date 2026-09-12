@@ -30,17 +30,25 @@ paquete de Python dentro del venv. No correr `playwright install`.
 
 ---
 
-## 01 · Zona v2 — redibujar el polígono  ⛔ BLOQUEANTE
+## 01 · Zona — confirmar el polígono  ✅ CERRADO
 
 ```
-estado:      pendiente · BLOQUEADO POR ISIDORA
+estado:      cerrado · 2026-09-12
 depende de:  —
-entrega:     la URL del polígono chico, guardada en specs.md
-cierra si:   la URL está en specs.md · el área del bounding box < 3 km² ·
-             la zona v1 quedó registrada como descartada
+entrega:     la URL del polígono, guardada y medida en specs.md
+cierra si:   la URL está en specs.md ✅ · el área real del polígono < 3 km² ✅ (2,56) ·
+             el método de medición queda documentado ✅
 ```
 
-Nada arranca sin esto. La zona v1 (~13 km²) está descartada por tamaño: ver specs.md.
+Resultado: polígono de **2,56 km²**, 31 vértices, sobre Providencia/Ñuñoa.
+
+El criterio original decía "bounding box < 3 km²" y estaba mal formulado: el box de
+esta zona mide 13,25 km² y el polígono sólo el 19% de eso. Medir por el box
+sobreestima cinco veces. El criterio quedó corregido a **área real del polígono**,
+que se obtiene decodificando el `polygon_location` y aplicando shoelace.
+
+Queda abierto un riesgo que hereda el item 03: a 528 avisos/km² la zona daría ~1.350
+avisos contra un tope de 500. Se decidió no tocar el tope hasta tener el conteo real.
 
 ---
 
@@ -48,7 +56,7 @@ Nada arranca sin esto. La zona v1 (~13 km²) está descartada por tamaño: ver s
 
 ```
 estado:      pendiente
-depende de:  00, 01
+depende de:  00, 01 ✅
 entrega:     .claude/skills/<nombre-a-definir>/SKILL.md
 cierra si:   el skill documenta cómo se arma la URL de listado, cómo pagina,
              qué selector tiene cada card y qué campos trae ·
@@ -79,6 +87,12 @@ cierra si:   declara motivo de corte ∈ {página incompleta, tope, timeout} ·
 Corte: página incompleta · tope 500 · timeout 10 min. Lo primero que ocurra.
 El crudo se guarda **antes** de filtrar nada: si el parseo tiene un bug, no se
 vuelve a scrapear para arreglarlo.
+
+**Heredado del item 01 — vigilar el tope.** La zona podría tener ~1.350 avisos contra
+un tope de 500. Si esta corrida corta por **tope** en vez de por **página incompleta**,
+el censo quedó incompleto y el ranking pasa a ser una muestra sesgada. En ese caso:
+subir el tope al doble del conteo observado, el timeout a 20 min, y volver a correr
+antes de seguir al item 04.
 
 **→ Puerta 1.** Acá para y espera revisión del snapshot.
 
