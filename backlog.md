@@ -233,20 +233,46 @@ para correr un lunes a las 07:00 sin nadie mirando. **Decisión pendiente de Isi
 
 ---
 
-## 06 · analista — ratios y ranking
+## 06 · analista — ratios y ranking  · en curso
 
 ```
-estado:      pendiente
-depende de:  05
-entrega:     scripts/analista.py · columnas de ranking en Notion
-cierra si:   ratios recalculados == guardados ·
-             ningún grupo de <5 propiedades reporta percentil ·
-             no existe ninguna columna de score compuesto
+estado:      en curso · 2026-09-12 · calculado sobre las 190 que hay en Notion
+depende de:  05 (que está a su vez incompleto: 190 filas de 1.100)
+entrega:     scripts/analista.py ✅ · runs/<corrida>/05-ranking.json ✅ ·
+             página "Ranking por tipología" en Notion ✅ ·
+             columnas de ranking en Notion ⏳
+cierra si:   ratios recalculados == guardados ✅ ·
+             ningún grupo de <5 propiedades reporta percentil ✅ ·
+             no existe ninguna columna de score compuesto ✅ ·
+             el ranking cubre el censo completo ⏳ (cubre 190 de 1.100)
 ```
 
-Cero supuestos financieros acá: sólo aritmética sobre lo observado (UF/m², mediana,
-percentil). Agrupar por tipología y ordenar dentro de cada grupo — un 1D1B no se
-compara contra un 2D2B.
+Cero supuestos financieros: una división, una mediana y un conteo. 183 propiedades
+en el ranking, 7 declaradas afuera (5 proyectos, 2 sin tipología). 19 grupos, 9 con
+percentil y 10 marcados como grupo chico.
+
+**Dos definiciones acordadas con Isidora el 2026-09-12:**
+
+- **El grupo es (tipología, tipo de m²)**, no sólo tipología. Mismo motivo por el que
+  un 1D1B no se compara con un 2D2B: 90 m² útiles no son 90 m² totales, y un UF/m²
+  que los mezcla compara dos cosas distintas.
+- **El percentil es el porcentaje del grupo con UF/m² menor.** 0 = la más barata por
+  m² de su tipología. Dice dónde cae en la distribución; **no dice "mejor"**.
+
+**El chequeo que hace imposible el score compuesto:** las columnas de salida se
+comparan contra una lista blanca. Cualquier columna nueva que no esté declarada pone
+el chequeo en rojo. La regla deja de depender de que alguien se acuerde.
+
+**Lo que impide cerrar el item, y no es el ranking:** las 190 filas cargadas no son
+una muestra aleatoria de las 1.100 — son las primeras del orden del portal, que es
+comercial. El ranking es correcto sobre lo que hay, pero *las mejores de estas 190*
+no es *las mejores de la zona*. Es exactamente el sesgo contra el que advierte
+`specs.md`. El item cierra cuando el 05 termine de cargar.
+
+**Dónde quedó escrito.** El ranking completo está en la página *Ranking por tipología*
+de Notion y en `runs/<corrida>/05-ranking.json`. **No** está en las columnas de cada
+fila: `notion-update-page` actualiza una página por llamada, y 183 filas son 183
+llamadas. Con un token propio, `analista.py` las escribe en segundos.
 
 **→ Puerta 2.** Isidora elige el puñado que pasa al evaluador. El ranking ordena, no
 elige.
@@ -404,3 +430,69 @@ cierra si:   cada propuesta dice qué falla concreta cubre ·
 Buscar vulnerabilidades, puntos ciegos, límites por agente (permisos, tiempo de
 acción, capacidades). Pensarlo como sistema continuo: qué memoria hace sentido
 mantener entre corridas.
+
+---
+
+## 16 · Duplicados por contenido
+
+```
+estado:      pendiente
+depende de:  05
+entrega:     chequeo en scripts/analista.py
+cierra si:   reporta los grupos de avisos con mismo precio, m² y tipología
+             y distinto ID · ninguno se borra, quedan marcados
+```
+
+Propuesto y postergado el 2026-09-12. **Es el más urgente de los cuatro.** El dedup
+de hoy es por ID del portal, así que dos publicaciones del mismo departamento con
+IDs distintos entran las dos. Ya se vieron dos avisos idénticos de $240.000.000, 44
+m², 1D1B, con IDs distintos. Si eso se repite, el censo está inflado y **todas las
+medianas están corridas** — y el ranking parece igual de prolijo.
+
+---
+
+## 17 · Distancia a la mediana del grupo, en %
+
+```
+estado:      pendiente
+depende de:  06
+entrega:     columna nueva calculada por el analista
+cierra si:   (UF/m² − mediana del grupo) ÷ mediana, recalculable ·
+             sin percentil en grupos chicos, igual que las demás
+```
+
+Propuesto y postergado el 2026-09-12. Aritmética pura. Lee mejor que el percentil:
+*"está 23% bajo la mediana de su tipología"* en vez de *"percentil 12"*.
+
+---
+
+## 18 · Dispersión del grupo y outliers declarados
+
+```
+estado:      pendiente
+depende de:  06
+entrega:     rango intercuartílico por grupo · marca de outlier por propiedad
+cierra si:   ninguna propiedad se descarta: se marcan ·
+             el criterio (1,5 × IQR) queda escrito y es recalculable
+```
+
+Propuesto y postergado el 2026-09-12. Contesta cuándo la mediana de un grupo
+significa algo. Un grupo con un rango intercuartílico enorme no tiene un precio de
+mercado, tiene una nube — y ordenar dentro de esa nube es ruido prolijo. Marcaría
+sola la propiedad de 2 m² y la de 417 UF/m².
+
+---
+
+## 19 · UF por dormitorio, y si el precio escala con la superficie
+
+```
+estado:      pendiente
+depende de:  06
+entrega:     dos análisis más, sin supuestos financieros
+cierra si:   ambos son recalculables desde lo observado
+```
+
+Propuesto y postergado el 2026-09-12. El UF/m² castiga a los departamentos con
+terrazas y logias grandes; el UF por dormitorio es otra lente sobre el mismo dato.
+Y la relación precio–superficie dentro de cada grupo dice si el m² extra se paga o
+no en esa tipología.
