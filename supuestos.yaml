@@ -24,6 +24,35 @@ uf:
   fuente: https://www.sii.cl/valores_y_fechas/uf/uf2026.htm
   observado: true            # este si se observo: se saco del SII ese dia
 
+# El dolar observado NO se publica todos los dias: el 2026-09-12 es sabado, asi
+# que el ultimo publicado es el del viernes 11. Se guarda con SU fecha, no con
+# la de hoy.
+dolar:
+  valor: 937.17
+  fecha: '2026-09-11'
+  fuente: https://www.sii.cl/valores_y_fechas/dolar/dolar2026.htm
+  observado: true
+  nota: dolar observado del ultimo dia habil bancario anterior
+
+# LA TARIFA · decision de Isidora del 2026-09-12
+#
+# Tarifa plana de 100 USD por noche, igual todos los meses y todas las
+# tipologias. Es un SUPUESTO DECLARADO por Isidora, no una observacion: nadie
+# midio que un departamento de esta zona se arriende a 100 USD la noche.
+#
+# Lo que se pierde al fijarla, y conviene tenerlo presente:
+#   - la estacionalidad. Enero y julio pasan a valer lo mismo, y la ocupacion de
+#     equilibrio deja de distinguir un verano bueno de un invierno malo.
+#   - la diferencia entre tipologias por el lado del ingreso. Un 1D1B y un 4D4B
+#     facturan igual por noche, asi que el grande se ve peor solo por tener mas
+#     m² que pagar. Eso mueve el ranking del evaluador, no el del analista.
+tarifa:
+  modo: fija_usd             # fija_usd | curva_por_tipologia
+  usd_por_noche: 100
+  observado: false
+  decidido_por: Isidora
+  fecha_decision: '2026-09-12'
+
 credito:
   pie_pct: 0.20              # NO OBSERVADO
   bono_pie_uf: 0             # NO OBSERVADO · baja el credito (decision 2026-09-12)

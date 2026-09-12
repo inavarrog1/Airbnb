@@ -30,18 +30,27 @@ def modelo_python(S, precio, tipologia):
         divs.append(cuota + saldo * c["seguro_desgravamen_mensual"] + precio * c["seguro_incendio_mensual"])
         saldo -= amort
     cur = S["tipologias"].get(tipologia, S["tipologias"]["_default"])
+
+    def tarifa(m):
+        """misma regla que el HTML, escrita aparte: si la tarifa es fija en
+        dolares, es la misma todos los meses y todas las tipologias"""
+        t = S.get("tarifa", {})
+        if t.get("modo") == "fija_usd":
+            return t["usd_por_noche"] * S["dolar"]["valor"] / S["uf"]["valor"]
+        return cur["tarifa_uf"][m]
+
     prov = sum(e["valor_uf"] / e["vida_util_meses"] for e in S["equipamiento"])
     fijos = o["gastos_comunes_uf"] + o["contribuciones_anual_uf"] / 12 + o["internet_uf"] + o["seguro_contenido_uf"]
     R = V = F = flujo1 = 0.0
     for m in range(12):
         disp = max(0, DIAS[m] - o["dias_bloqueados_mes"])
         ocup = disp * cur["ocupacion"][m]
-        bruto = cur["tarifa_uf"][m] * ocup
+        bruto = tarifa(m) * ocup
         oper = (bruto - bruto * o["comision_plataforma"] - bruto * o["administracion"]
                 - (ocup / o["estadia_media_noches"]) * o["costo_aseo_uf"]
                 - ocup * o["costo_por_noche_uf"] - fijos - prov)
         flujo1 += oper - divs[m]
-        R += cur["tarifa_uf"][m] * disp
+        R += tarifa(m) * disp
         V += disp * o["costo_por_noche_uf"] + (disp / o["estadia_media_noches"]) * o["costo_aseo_uf"]
         F += fijos + prov + divs[m]
     den = R * (1 - o["comision_plataforma"] - o["administracion"]) - V

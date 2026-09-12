@@ -331,8 +331,27 @@ de esa tipología, la operación no se justifica — arrendarlo a un año da má
 menos trabajo. **El arriendo es dato observado; el Airbnb todavía sale de supuestos**,
 y el evaluador lo dice en la misma pantalla.
 
-**Para desbloquear:** habilitar `airbnb.cl` y `airbnb.com` en el entorno, levantar la
-muestra, y firmar.
+**Tarifa plana de 100 USD por noche · decidido por Isidora el 2026-09-12.** En vez de
+la curva de 12 meses, una tarifa fija para todas las tipologías y todos los meses.
+Convertida con el **dólar observado del SII: 937,17 del 2026-09-11** —el 12 es sábado
+y no se publica, así que el valor queda guardado con *su* fecha— da **2,2908 UF por
+noche**. La tarifa misma **no es observada**: es un supuesto declarado, y el yaml lo
+dice en `tarifa.observado: false`.
+
+Lo que se pierde al fijarla, anotado en el yaml y en la pantalla:
+
+- **la estacionalidad.** Enero y julio valen lo mismo, y la ocupación de equilibrio
+  deja de distinguir un verano bueno de un invierno malo. Es justo lo que el propio
+  pedido inicial quería evitar al pedir curvas y no promedios.
+- **la diferencia de ingreso entre tipologías.** Un 1D1B y un 4D4B facturan igual por
+  noche, así que el grande se ve peor sólo por tener más m² que pagar.
+
+Ese segundo efecto se ve entero en el resultado: con esta tarifa, **15 de las 183
+propiedades pasan el corte de 65%, y 12 de esas 15 son 1D1B**. Ninguna de las 39
+propiedades 3D3B pasa. Eso no dice que los 1D1B sean mejor negocio: dice que una
+tarifa plana premia al departamento chico por construcción.
+
+**Para desbloquear el item:** observar la tarifa (Airbnb u otra fuente) y firmar.
 
 ---
 

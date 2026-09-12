@@ -57,6 +57,8 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--azul);font-size:13px}
 <div class="caja"><h3>Retorno y venta</h3><div class="grid" id="s-retorno"></div></div>
 <div class="caja"><h3>Equipamiento · se repone según su vida útil</h3>
  <div class="tabla-scroll"><table id="s-equipo"></table></div></div>
+<div class="caja"><h3>La tarifa</h3><div class="grid" id="s-tarifa"></div>
+ <p class="mini" id="tarifa-nota"></p></div>
 <div class="caja"><h3>Curvas de 12 meses de la tipología seleccionada</h3>
  <p class="mini">Enero no es julio. Por eso son curvas y no un promedio.</p>
  <div class="tabla-scroll"><table id="s-curvas"></table></div></div>
@@ -147,12 +149,18 @@ function credito(P, over){
 }
 
 function curvas(tip){ return S.tipologias[tip] || S.tipologias._default; }
+function tarifaUF(tip, m){
+  // modo fija_usd: la misma tarifa todos los meses y todas las tipologias
+  if(S.tarifa && S.tarifa.modo === 'fija_usd')
+    return S.tarifa.usd_por_noche * S.dolar.valor / S.uf.valor;
+  return curvas(tip).tarifa_uf[m];
+}
 
 function operacion(tip, m){                     // un mes calendario, en UF
   const c = curvas(tip), o = S.operacion;
   const disp = Math.max(0, DIAS[m] - o.dias_bloqueados_mes);
   const ocup = disp * c.ocupacion[m];
-  const bruto = c.tarifa_uf[m] * ocup;
+  const bruto = tarifaUF(tip, m) * ocup;
   const comision = bruto*o.comision_plataforma, admin = bruto*o.administracion;
   const aseo = (ocup/o.estadia_media_noches)*o.costo_aseo_uf;
   const variables = ocup*o.costo_por_noche_uf;
@@ -180,7 +188,7 @@ function modelo(prop){
   let R=0,V=0,F=0;
   for(let m=0;m<12;m++){
     const disp=Math.max(0,DIAS[m]-o.dias_bloqueados_mes);
-    R += c.tarifa_uf[m]*disp;
+    R += tarifaUF(prop.tipologia, m)*disp;
     V += disp*o.costo_por_noche_uf + (disp/o.estadia_media_noches)*o.costo_aseo_uf;
     F += o.gastos_comunes_uf + o.contribuciones_anual_uf/12 + o.internet_uf + o.seguro_contenido_uf
        + S.equipamiento.reduce((a,e)=>a+e.valor_uf/e.vida_util_meses,0)
@@ -310,8 +318,31 @@ function pintarSupuestos(){
      <td><input data-ruta="equipamiento.${i}.vida_util_meses" type="number" step="1" value="${e.vida_util_meses}" class="${SIN_FIRMAR?'nofirm':''}"></td>
      <td>${fmt(e.valor_uf/e.vida_util_meses,2)}</td></tr>`).join('');
 }
+function pintarTarifa(){
+  const t = S.tarifa || {modo:'curva_por_tipologia'};
+  const fija = t.modo==='fija_usd';
+  const ufNoche = fija ? t.usd_por_noche*S.dolar.valor/S.uf.valor : null;
+  $('#s-tarifa').innerHTML =
+   `<div><label>Modo</label><select data-ruta="tarifa.modo">
+     <option value="fija_usd">fija en dólares</option>
+     <option value="curva_por_tipologia">curva de 12 meses por tipología</option></select></div>`
+   + (fija ? campo('tarifa.usd_por_noche',t.usd_por_noche,5,'USD por noche')
+           + campo('dolar.valor',S.dolar.valor,0.01,'Dólar observado (CLP)')
+           + `<div><label>Equivale a</label><div style="font-weight:600">${fmt(ufNoche,4)} UF/noche</div></div>`
+           + `<div><label>En pesos</label><div style="font-weight:600">$${Math.round(t.usd_por_noche*S.dolar.valor).toLocaleString('es-CL')}</div></div>`
+           : '');
+  $('#s-tarifa').querySelector('select').value = t.modo;
+  $('#tarifa-nota').innerHTML = fija
+   ? `<b>Tarifa plana, supuesto declarado por Isidora el ${t.fecha_decision} — no observada.</b>
+      Dólar de ${S.dolar.fecha} (${S.dolar.fuente.includes('sii')?'SII':''}), que es el último día hábil publicado.
+      Al fijarla se pierden dos cosas: la <b>estacionalidad</b> —enero y julio pasan a valer lo mismo— y la
+      diferencia de ingreso entre tipologías: un 1D1B y un 4D4B facturan igual por noche, así que el grande
+      se ve peor sólo por tener más m² que pagar.`
+   : 'Curva de 12 meses por tipología. Los valores editables de abajo son los que manda.';
+}
 function pintarCurvas(tip){
   const c = curvas(tip);
+  const fija = S.tarifa && S.tarifa.modo==='fija_usd';
   const esDefault = !S.tipologias[tip];
   $('#s-curvas').innerHTML =
    `<tr><th>${tip}${esDefault?' <span class="pill">sin curva propia, usa la de respaldo</span>':''}</th>`
@@ -328,6 +359,7 @@ function propActual(){
 }
 function pintarTodo(){
   const prop = propActual();
+  pintarTarifa();
   pintarCurvas(prop.tipologia);
   const M = modelo(prop);
   const corte = 0.65;
