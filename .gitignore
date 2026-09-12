@@ -1,2 +1,9 @@
 # Clon del repo del taller (tiene su propio .git, se obtiene con git clone)
 taller-mba-uc/
+
+# Entorno de Python del proyecto
+.venv/
+
+# Salidas de corridas: el contenido no se versiona, la carpeta si
+runs/*
+!runs/.gitkeep
