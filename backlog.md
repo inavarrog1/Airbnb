@@ -186,18 +186,50 @@ error.
 
 ---
 
-## 05 · cargador — snapshot a Notion
+## 05 · cargador — snapshot a Notion  · en curso
 
 ```
-estado:      pendiente
-depende de:  04
-entrega:     scripts/cargador.py · filas en Notion
-cierra si:   filas en Notion == filas del snapshot post-dedup ·
-             precio y m² coinciden fila por fila ·
-             todo homologado a UF · 0 precios ≤ 0
+estado:      en curso · 2026-09-12 · cargada una muestra de 100 de 1.100
+depende de:  04 ✅
+entrega:     scripts/cargador.py ✅ · filas en Notion ⏳ (100 de 1.100)
+cierra si:   filas en Notion == filas del snapshot post-dedup ⏳ (faltan 1.000) ·
+             precio y m² coinciden fila por fila ✅ (100/100, 0 diferencias) ·
+             todo homologado a UF ✅ · 0 precios ≤ 0 ✅
 ```
 
-Homologación CLP→UF con el valor y la fecha de la UF registrados en el manifest.
+**UF de 40.910,10 del 2026-09-12**, sacada del SII y contrastada contra dos tablas de
+la misma página. Entra por parámetro con su fecha y su fuente, y **no tiene default**:
+un default sería un número inventado. Queda en el manifest de la corrida.
+
+**Cómo se reparte el trabajo.** La autenticación de Notion la tiene el conector MCP del
+agente, no un script. Así que `cargador.py` transforma y verifica —determinista y
+re-corrible— y el agente escribe las filas por MCP:
+
+```
+cargador.py            01-snapshot.json → 02-filas.json (1.100 filas)
+el agente (MCP)        02-filas.json → filas en Notion
+cargador.py --verificar  lo que quedó en Notion vs. lo esperado, campo por campo
+```
+
+**La muestra de 100 dio todo verde**, y se eligió con criterio: incluye **las 31 en
+CLP**, que son las únicas donde el cargador hace aritmética de verdad. 0 diferencias
+en precio, m², dormitorios y baños. Y 0 filas con `Aprobada para visitar` o `Notas`
+escritas — la regla 3, verificada contra Notion y no contra una intención.
+
+**Dos cosas que muerden al cargar, ambas descubiertas cargando:**
+
+- **Notion no crea opciones de select solas.** Cargar una tipología no declarada
+  devuelve `validation_error` y **rechaza el lote entero**, no la fila. Quedaron
+  declaradas las 27 observadas; el `cargador` va a tener que agregar las nuevas antes
+  de escribir.
+- **La columna URL se llama `userDefined:URL` por dentro.** Escribirla con el nombre
+  visible la pierde sin error.
+
+**Lo que falta para cerrar: las 1.000 restantes.** Cargarlas por MCP significa que el
+agente transcribe ~600 KB a mano, en once llamadas. La alternativa es un token propio
+de Notion en un `.env` fuera de git, con el que `cargador.py` escribe directo por la
+API: segundos en vez de un rato largo, re-corrible, y es lo que el item 14 necesita
+para correr un lunes a las 07:00 sin nadie mirando. **Decisión pendiente de Isidora.**
 
 ---
 

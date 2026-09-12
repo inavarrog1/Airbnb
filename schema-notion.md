@@ -21,7 +21,13 @@ Creada el 2026-09-12 en el espacio privado de Isidora.
 | Base | *Propiedades* — `0fc8de51-b840-4be6-9c8e-6fd69ab5b20b` |
 | Data source (es lo que usa el `cargador`) | `c98d2385-6f7f-4b9d-b3b1-e81746204a39` |
 
-**Cuidado con la columna URL.** Notion reserva ese nombre para el link de la fila, así
+**Dos cosas que muerden al cargar.**
+
+1. **Notion no crea opciones de select automáticamente.** Se creyó que sí y no: cargar
+   una tipología no declarada devuelve `validation_error` y **rechaza el lote entero**,
+   no sólo esa fila. El `cargador` tiene que comparar las tipologías que trae contra
+   las declaradas y agregar las que falten antes de escribir ninguna fila.
+2. **Cuidado con la columna URL.** Notion reserva ese nombre para el link de la fila, así
 que la propiedad quedó con el nombre interno **`userDefined:URL`**. Se ve *URL* en la
 pantalla, pero el `cargador` tiene que escribirla con el nombre interno o la escritura
 se pierde sin error. Es exactamente el tipo de falla que el item 05 verifica campo por
@@ -56,7 +62,7 @@ que la abra.
 | **Tipo de m²** | select `útiles` · `totales` | `cargador` | Observado: 1.092 útiles y 6 totales. **No son lo mismo** y un UF/m² que los mezcla compara dos cosas distintas. |
 | **Dormitorios** | número | `cargador` | Vacío en 11 avisos. |
 | **Baños** | número | `cargador` | Vacío en 10 avisos. |
-| **Tipología** | select, formato `NDMB` | `cargador` | La que usa el `analista` para agrupar. Un 1D1B no se compara contra un 2D2B. **Las opciones no se declaran de antemano: las crea el `cargador` a medida que las observa.** En el censo del 2026-09-12 salieron 28, desde 2D2B con 204 propiedades hasta 8D4B con una sola. |
+| **Tipología** | select, formato `NDMB` | `cargador` | La que usa el `analista` para agrupar. Un 1D1B no se compara contra un 2D2B. **Notion no crea opciones de select solas:** una tipología nueva hay que declararla en la base *antes* de cargarla o la fila se rechaza entera. Están declaradas las 27 observadas el 2026-09-12, desde 2D2B con 204 propiedades hasta 8D4B con una sola. |
 | **Tipo de aviso** | select `unidad` · `proyecto` | `cargador` | 5 avisos son proyectos: precio *"Desde"* y atributos en rango. Su UF/m² compara el piso de un rango contra el piso de otro y sale primero en cualquier ranking. Quedan marcados, no borrados. |
 | **Datos faltantes** | multi-select `m²` · `dormitorios` · `baños` | `cargador` | Hace visible el vacío. Sin esta columna, "no lo declaró" y "nadie lo cargó" se ven igual. |
 
