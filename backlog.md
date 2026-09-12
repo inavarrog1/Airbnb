@@ -142,19 +142,47 @@ El censo que pasa al item 04 es el de `runs/2026-09-12-1210-2` — 1.100 avisos.
 
 ---
 
-## 04 · Schema de Notion y creación de la base
+## 04 · Schema de Notion y creación de la base  ✅ CERRADO
 
 ```
-estado:      pendiente
-depende de:  03
-entrega:     la base creada en el espacio privado · el schema documentado
-cierra si:   cada columna declara tipo y quién la escribe (sistema o Isidora) ·
-             existe la columna de aprobación para visitar ·
-             existe la columna de estado (nueva/repetida/bajó/desapareció)
+estado:      cerrado · 2026-09-12
+depende de:  03 ✅
+entrega:     la base creada en el espacio privado ✅ · el schema documentado ✅
+             (schema-notion.md)
+cierra si:   cada columna declara tipo y quién la escribe ✅ (las 24, y la
+             descripción vive en Notion, no sólo en el repo) ·
+             existe la columna de aprobación para visitar ✅ ·
+             existe la columna de estado (nueva/repetida/bajó/desapareció) ✅
 ```
 
-Se diseña **después** de tener el snapshot: es mejor definir la base sabiendo qué
-trae el dato realmente, no lo que se supone que trae.
+24 columnas en cinco bloques. Las de decisión son dos —**Aprobada para visitar** y
+**Notas**— y el sistema no las escribe nunca; el chequeo de la regla 3 (item 13) las
+mira.
+
+**Tres columnas existen porque el snapshot las hizo necesarias**, no porque se
+imaginaran antes: `Tipo de m²` (1.092 avisos declaran útiles y 6 totales, y un UF/m²
+que los mezcla compara dos cosas distintas), `Datos faltantes` (2 sin m², 11 sin
+dormitorios, 10 sin baños — sin esta columna "el aviso no lo declaró" y "nadie lo
+cargó" se ven igual) y `Tipo de aviso` (los 5 proyectos publican precio "Desde" y
+atributos en rango). Esto es lo que se ganó diseñando la base **después** del
+snapshot.
+
+**Dos decisiones que se tomaron acá:**
+
+- **El valor de la UF y su fecha no están en la tabla: viven en el manifest de la
+  corrida**, y la columna `Corrida` es el link. Es un dato por corrida, no por
+  propiedad; repetirlo 1.100 veces no lo hace más cierto y sí más fácil de
+  desincronizar. El costo queda anotado: borrar una carpeta de `runs/` deja filas que
+  ya no se pueden auditar.
+- **La cola larga de tipologías no se agrupa en un "otras".** 28 combinaciones, desde
+  2D2B con 204 propiedades hasta 8D4B con una. Agruparlas mezclaría justo lo que la
+  tipología separa; lo que las protege es `Tamaño del grupo`, que deja ver un grupo de
+  1 como grupo de 1 — y sin percentil.
+
+**Trampa encontrada al crear la base:** Notion reserva el nombre `URL`, así que esa
+columna quedó con el nombre interno `userDefined:URL`. Se ve *URL* en pantalla, pero
+el `cargador` tiene que escribirla con el nombre interno o la escritura se pierde sin
+error.
 
 ---
 
