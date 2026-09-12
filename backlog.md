@@ -392,17 +392,39 @@ abra sin red. La UF va **embebida con su fecha y su fuente** (40.910,10 del
 
 ---
 
-## 09 · extractor-de-ficha
+## 09 · extractor-de-ficha  · bloqueado por la puerta 3, y con un hallazgo
 
 ```
-estado:      pendiente
+estado:      bloqueado · 2026-09-12 · 0 propiedades aprobadas en Notion
 depende de:  08
 entrega:     scripts/extractor.py · runs/<fecha>/contactos.json
 cierra si:   una ficha por propiedad aprobada, ni una más ·
              cada contacto declara si tiene mail, teléfono o ninguno
 ```
 
-Es el trabajo caro. Sólo sobre las aprobadas. Lee Notion, nunca escribe.
+**La ficha individual no trae ni mail ni teléfono.** Sondeadas dos fichas (una de
+corredora, una de particular): 0 direcciones de correo y 0 teléfonos en 562 KB de
+HTML servido, contra 29 menciones de iniciar sesión. El contacto va por el formulario
+del propio portal, detrás de login.
+
+Lo que **sí** trae la ficha:
+
+| Campo | Ejemplo |
+|---|---|
+| `seller_name` | `Vivaqui.com` (corredora) · `Asye8378655` (alias de particular) |
+| `seller_id` | `92388263` |
+| `location` | latitud y longitud · **no** la dirección de calle |
+
+**Esto abre un caso que el diseño no contempló.** El item 10 dice *"si hay mail, va
+como mail; si sólo hay teléfono, como texto de WhatsApp"*. Con esta gramática el caso
+real es un tercero: **ninguno de los dos, y el canal es el formulario del portal**.
+Escribir ahí es enviar algo, así que lo hace Isidora, no el sistema. El entregable
+honesto pasa a ser: el nombre de la corredora, y el mensaje redactado listo para que
+ella lo pegue en el canal que elija.
+
+Queda por verificar si el teléfono aparece **después de un clic con sesión iniciada**.
+Eso ya no es leer una página pública: es operar una cuenta, y necesita una decisión de
+Isidora antes de intentarlo.
 
 ---
 
