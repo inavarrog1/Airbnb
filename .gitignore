@@ -7,3 +7,7 @@ taller-mba-uc/
 # Salidas de corridas: el contenido no se versiona, la carpeta si
 runs/*
 !runs/.gitkeep
+
+# Cache de bytecode de Python
+__pycache__/
+*.pyc
