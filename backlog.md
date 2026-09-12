@@ -441,47 +441,29 @@ a las 08:00 porque la lógica de alternar franjas no alternaba.
 
 ---
 
-## 11 · redactor-agendador · bloqueos  · BLOQUEADO por el MCP
+## 11 · redactor-agendador · bloqueos  · esperando el cambio de la regla 2
 
 ```
-estado:      bloqueado · 2026-09-12 · el MCP de Calendar no expone el status
+estado:      en curso · 2026-09-12 · Isidora aceptó la marca en el título
 depende de:  10 ✅
-entrega:     un evento tentativo por visita en el calendario primary
-cierra si:   100% de eventos con status tentativo ❌ · 100% con 0 invitados ✅ ·
-             60 min ✅ · dentro de las ventanas ✅ · timezone America/Santiago ✅
+entrega:     un evento marcado TENTATIVO por visita en el calendario primary
+cierra si:   100% de eventos con la marca TENTATIVO en el título ⏳ ·
+             100% con 0 invitados ⏳ · 60 min ⏳ · dentro de las ventanas ⏳ ·
+             timezone America/Santiago ⏳
 ```
 
-**No se puede cumplir con las herramientas disponibles.** Ni `create_event` ni
-`update_event` del MCP de Google Calendar exponen el campo `status`. Un evento creado
-por ahí nace con `status: "confirmed"`, y eso viola la **regla 2 de `CLAUDE.md`**:
-*"Ningún evento de calendario se crea confirmado ni con invitados."*
+**El `cierra si` pedía `status` tentativo y eso no se puede.** El MCP de Google
+Calendar no expone el campo: todo evento nace `confirmed`. Se comprobó creando uno y
+borrándolo.
 
-Se creó uno para comprobarlo —privado, 0 invitados, 60 min, en la ventana, titulado
-`TENTATIVO … (sin confirmar)`— y la API lo devolvió con `status: "confirmed"`.
-**Se borró de inmediato**: dejarlo habría sido dejar una violación de una regla dura
-en la agenda, y el chequeo del item 13 lo habría marcado rojo.
+Isidora eligió el 2026-09-12 aceptar el evento con la **marca en el título** en vez de
+en el campo. Eso obliga a cambiar la **regla 2 de `CLAUDE.md`**, que hoy dice que
+ningún evento se crea confirmado. **Mientras esa regla no cambie, el evento no se
+crea**: crearlo primero sería violar una regla que sigue vigente, que es justamente lo
+que se evitó hace un rato al borrar el evento de prueba.
 
-Caminos posibles, ninguno tomado todavía:
-
-- **Aceptar el evento marcado pero `confirmed`.** Decisión de Isidora, y habría que
-  cambiar la regla 2 y su chequeo, no ignorarlos.
-- **Crearlo con `availability: FREE`.** Es otra cosa que tentativo —dice "no me
-  bloquea el tiempo", no "no está confirmado"— y justamente por eso no sirve como
-  bloqueo.
-- **Que Isidora lo cree a mano.** Los tres horarios ya están calculados.
-- **Otro MCP de Calendar** que sí exponga `status`.
-
-## 11 · redactor-agendador · bloqueos de agenda
-
-```
-estado:      pendiente
-depende de:  10
-entrega:     un evento tentativo por visita en el calendario primary
-cierra si:   100% de eventos con status tentativo · 100% con 0 invitados ·
-             60 min cada uno · dentro de las ventanas · timezone America/Santiago
-```
-
-Los tres horarios propuestos salen de leer la ocupación real del calendario.
+El cambio propuesto a la regla 2 está redactado y esperando aprobación. Lo que
+protege de verdad —**cero invitados**— no se toca.
 
 ---
 
@@ -513,7 +495,8 @@ cierra si:   corre todos los chequeos de los items anteriores ·
 Los cuatro chequeos que miran las reglas duras, que son los que más valen porque
 verifican que el sistema **no hizo** algo:
 - 0 mails enviados
-- 0 eventos confirmados y 0 con invitados
+- 0 eventos con invitados · y la marca de "no confirmado" donde la regla 2 diga que
+  vaya (ver el cambio pendiente: el campo `status` no es alcanzable desde el MCP)
 - el crudo no fue modificado después de escrito
 - ninguna columna de decisión de Notion escrita por el sistema
 
