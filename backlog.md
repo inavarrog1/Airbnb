@@ -392,56 +392,84 @@ abra sin red. La UF va **embebida con su fecha y su fuente** (40.910,10 del
 
 ---
 
-## 09 · extractor-de-ficha  · bloqueado por la puerta 3, y con un hallazgo
+## 09 · extractor-de-ficha  ✅ CERRADO
 
 ```
-estado:      bloqueado · 2026-09-12 · 0 propiedades aprobadas en Notion
+estado:      cerrado · 2026-09-12 · puerta 3 cruzada con 1 propiedad
 depende de:  08
-entrega:     scripts/extractor.py · runs/<fecha>/contactos.json
-cierra si:   una ficha por propiedad aprobada, ni una más ·
-             cada contacto declara si tiene mail, teléfono o ninguno
+entrega:     scripts/extractor.py ✅ · runs/2026-09-12-1210-2/contactos.json ✅
+cierra si:   una ficha por propiedad aprobada, ni una más ✅ (1 aprobada, 1 ficha) ·
+             cada contacto declara si tiene mail, teléfono o ninguno ✅
 ```
 
-**La ficha individual no trae ni mail ni teléfono.** Sondeadas dos fichas (una de
-corredora, una de particular): 0 direcciones de correo y 0 teléfonos en 562 KB de
-HTML servido, contra 29 menciones de iniciar sesión. El contacto va por el formulario
-del propio portal, detrás de login.
+Aprobada: **MLC2239098631** — *Departamento Renovado En Providencia*, 3D3B, 104 m²,
+9.800 UF. Una sola ficha abierta, ni una más.
 
-Lo que **sí** trae la ficha:
+**El contacto declarado es `ninguno`, y eso es un resultado, no una falla.** La ficha
+publica el nombre de la corredora —**Coldwell Banker**, vendedor `667982270`— y las
+coordenadas, pero **ni mail ni teléfono**: 0 de cada uno en 564 KB. El canal es el
+formulario del propio portal, detrás de login, y escribir ahí es enviar algo.
 
-| Campo | Ejemplo |
-|---|---|
-| `seller_name` | `Vivaqui.com` (corredora) · `Asye8378655` (alias de particular) |
-| `seller_id` | `92388263` |
-| `location` | latitud y longitud · **no** la dirección de calle |
-
-**Esto abre un caso que el diseño no contempló.** El item 10 dice *"si hay mail, va
-como mail; si sólo hay teléfono, como texto de WhatsApp"*. Con esta gramática el caso
-real es un tercero: **ninguno de los dos, y el canal es el formulario del portal**.
-Escribir ahí es enviar algo, así que lo hace Isidora, no el sistema. El entregable
-honesto pasa a ser: el nombre de la corredora, y el mensaje redactado listo para que
-ella lo pegue en el canal que elija.
-
-Queda por verificar si el teléfono aparece **después de un clic con sesión iniciada**.
-Eso ya no es leer una página pública: es operar una cuenta, y necesita una decisión de
-Isidora antes de intentarlo.
+El chequeo *"no se inventó ningún dato de contacto"* compara lo vacío contra lo
+declarado vacío: si alguna vez aparece un mail que no salió de la ficha, se pone rojo.
 
 ---
 
-## 10 · redactor-agendador · borradores
+## 10 · redactor-agendador · borradores  ✅ CERRADO
 
 ```
-estado:      pendiente
-depende de:  09
-entrega:     un borrador en Gmail por propiedad aprobada
-cierra si:   un borrador por propiedad · **0 mails enviados** ·
-             cada mensaje propone 3 horarios dentro de las ventanas y de 7 días
+estado:      cerrado · 2026-09-12
+depende de:  09 ✅
+entrega:     scripts/redactor.py ✅ · runs/<corrida>/mensajes.json ✅ ·
+             borrador en Gmail ✅
+cierra si:   un borrador por propiedad ✅ · **0 mails enviados** ✅ ·
+             cada mensaje propone 3 horarios dentro de las ventanas y de 7 días ✅
 ```
 
-Estructura fija, redacción propia. Si hay mail, va como mail; si sólo hay teléfono,
-como texto de WhatsApp listo para copiar.
+**El borrador quedó en Gmail sin destinatario**, porque no hay mail observado y no se
+inventa uno. La nota al pie del borrador dice qué falta: completar con el correo de
+Coldwell Banker, o pegar el texto en el formulario de la publicación. **0 enviados.**
+
+Los tres horarios: **lunes 14 a las 08:00, martes 15 a las 17:00, miércoles 16 a las
+08:00**. Tres días distintos y alternando mañana y tarde — tres alternativas el mismo
+lunes a la misma hora no le sirven a nadie. **Los feriados del 18 y 19 quedan
+excluidos**: proponerle a una corredora una visita el dieciocho no iba a funcionar.
+
+Dos defectos que el primer borrador tenía y se corrigieron antes de dejarlo:
+el precio salía como `9,800 UF` con separador inglés, y los tres horarios caían todos
+a las 08:00 porque la lógica de alternar franjas no alternaba.
 
 ---
+
+## 11 · redactor-agendador · bloqueos  · BLOQUEADO por el MCP
+
+```
+estado:      bloqueado · 2026-09-12 · el MCP de Calendar no expone el status
+depende de:  10 ✅
+entrega:     un evento tentativo por visita en el calendario primary
+cierra si:   100% de eventos con status tentativo ❌ · 100% con 0 invitados ✅ ·
+             60 min ✅ · dentro de las ventanas ✅ · timezone America/Santiago ✅
+```
+
+**No se puede cumplir con las herramientas disponibles.** Ni `create_event` ni
+`update_event` del MCP de Google Calendar exponen el campo `status`. Un evento creado
+por ahí nace con `status: "confirmed"`, y eso viola la **regla 2 de `CLAUDE.md`**:
+*"Ningún evento de calendario se crea confirmado ni con invitados."*
+
+Se creó uno para comprobarlo —privado, 0 invitados, 60 min, en la ventana, titulado
+`TENTATIVO … (sin confirmar)`— y la API lo devolvió con `status: "confirmed"`.
+**Se borró de inmediato**: dejarlo habría sido dejar una violación de una regla dura
+en la agenda, y el chequeo del item 13 lo habría marcado rojo.
+
+Caminos posibles, ninguno tomado todavía:
+
+- **Aceptar el evento marcado pero `confirmed`.** Decisión de Isidora, y habría que
+  cambiar la regla 2 y su chequeo, no ignorarlos.
+- **Crearlo con `availability: FREE`.** Es otra cosa que tentativo —dice "no me
+  bloquea el tiempo", no "no está confirmado"— y justamente por eso no sirve como
+  bloqueo.
+- **Que Isidora lo cree a mano.** Los tres horarios ya están calculados.
+- **Otro MCP de Calendar** que sí exponga `status`.
 
 ## 11 · redactor-agendador · bloqueos de agenda
 
