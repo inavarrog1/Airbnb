@@ -1,5 +1,31 @@
 # ENTORNO.md — cómo correr esto
 
+Hay **dos entornos** y se comportan distinto. Leer el que corresponde.
+
+---
+
+# A · En tu máquina (Mac o Windows)
+
+Es donde hay que correr los agentes que tocan el portal (`buscador`,
+`extractor-de-ficha`), porque la sesión remota los tiene bloqueados por red.
+
+```
+python3 -m venv .venv
+.venv/bin/pip install playwright
+.venv/bin/playwright install chromium
+```
+
+**Acá SÍ hay que correr `playwright install`**: tu máquina no trae los navegadores.
+En Windows los comandos son `python -m venv .venv`, `.venv\Scripts\pip install
+playwright` y `.venv\Scripts\playwright install chromium`.
+
+Y **no** hace falta pasar `executable_path`: Playwright encuentra el navegador que
+acaba de instalar.
+
+---
+
+# B · En la sesión remota de Claude Code
+
 ## Python y Playwright
 
 ```
@@ -7,7 +33,7 @@ python3 -m venv .venv
 .venv/bin/pip install playwright
 ```
 
-**No correr `playwright install`.** Los navegadores ya están en la máquina, en
+**No correr `playwright install` acá.** Los navegadores ya están en la máquina, en
 `/opt/pw-browsers`.
 
 ## La trampa del build de Chromium
