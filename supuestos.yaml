@@ -1,0 +1,99 @@
+# supuestos.yaml
+#
+# ⚠️  SIN FIRMAR. Los valores de este archivo NO FUERON OBSERVADOS: son de
+# arranque, para que el mecanismo del evaluador se pueda ver funcionando.
+# No sirven para decidir una compra.
+#
+# El item 07 del backlog es reemplazarlos mirando Airbnb en la zona y firmar
+# los propios. Hasta que eso pase, el evaluador muestra todo en rojo.
+#
+# Las tarifas y ocupaciones son CURVAS DE 12 MESES, no promedios: enero no es
+# julio. El promedio anual es justo el numero que esconde la estacionalidad.
+
+firma:
+  firmado_por: null
+  fecha: null
+  estado: SIN_FIRMAR
+  nota: >-
+    Valores de arranque no observados. El archivo del taller no estaba
+    disponible en el entorno al construir el evaluador el 2026-09-12.
+
+uf:
+  valor: 40910.10
+  fecha: '2026-09-12'
+  fuente: https://www.sii.cl/valores_y_fechas/uf/uf2026.htm
+  observado: true            # este si se observo: se saco del SII ese dia
+
+credito:
+  pie_pct: 0.20              # NO OBSERVADO
+  bono_pie_uf: 0             # NO OBSERVADO · baja el credito (decision 2026-09-12)
+  tasa_anual: 0.045          # NO OBSERVADO
+  plazo_meses: 360           # NO OBSERVADO
+  conversion_tasa: equivalente   # (1+anual)^(1/12)-1 · decision 2026-09-12
+  seguro_desgravamen_mensual: 0.00025   # NO OBSERVADO · sobre saldo insoluto
+  seguro_incendio_mensual: 0.00012      # NO OBSERVADO · sobre valor de tasacion
+  gastos_operacionales_pct: 0.02        # NO OBSERVADO · notaria, conservador, tasacion, mutuo
+  carga_maxima_renta: 0.25              # NO OBSERVADO · dividendo / renta liquida
+  renta_liquida_clp: 0                  # la pone Isidora en pantalla
+
+operacion:
+  comision_plataforma: 0.03    # NO OBSERVADO
+  administracion: 0.18         # NO OBSERVADO · % sobre ingreso bruto
+  estadia_media_noches: 3      # NO OBSERVADO
+  costo_aseo_uf: 0.60          # NO OBSERVADO · por estadia
+  costo_por_noche_uf: 0.12     # NO OBSERVADO · amenities y consumos
+  dias_bloqueados_mes: 2       # NO OBSERVADO · mantencion y uso propio
+  gastos_comunes_uf: 3.5       # NO OBSERVADO · mensual
+  contribuciones_anual_uf: 8   # NO OBSERVADO
+  internet_uf: 0.8             # NO OBSERVADO · mensual
+  seguro_contenido_uf: 0.3     # NO OBSERVADO · mensual
+
+equipamiento:                  # TODO NO OBSERVADO · vida util en meses
+  - {item: Muebles y decoracion, valor_uf: 120, vida_util_meses: 84}
+  - {item: Electrodomesticos,    valor_uf: 60,  vida_util_meses: 60}
+  - {item: Ropa de cama y bano,  valor_uf: 20,  vida_util_meses: 24}
+  - {item: Cocina y menaje,      valor_uf: 15,  vida_util_meses: 36}
+  - {item: Cerradura y domotica, valor_uf: 10,  vida_util_meses: 60}
+
+retorno:
+  tasa_descuento: 0.08       # NO OBSERVADO · variable en pantalla
+  plusvalia_anual: 0.03      # NO OBSERVADO · variable en pantalla
+  anio_venta: 10             # NO OBSERVADO · variable en pantalla
+  comision_corredor: 0.02    # NO OBSERVADO · sobre el precio de venta
+
+# Curvas de 12 meses, enero a diciembre. TODAS NO OBSERVADAS.
+# tarifa_uf: precio por noche, en UF.  ocupacion: fraccion de 0 a 1.
+tipologias:
+  1D1B:
+    tarifa_uf:  [1.90, 1.80, 1.55, 1.40, 1.30, 1.25, 1.35, 1.35, 1.45, 1.60, 1.75, 1.95]
+    ocupacion:  [0.85, 0.82, 0.72, 0.65, 0.60, 0.58, 0.62, 0.63, 0.68, 0.74, 0.78, 0.84]
+  1D2B:
+    tarifa_uf:  [2.10, 2.00, 1.72, 1.55, 1.44, 1.38, 1.50, 1.50, 1.61, 1.78, 1.94, 2.16]
+    ocupacion:  [0.84, 0.81, 0.71, 0.64, 0.59, 0.57, 0.61, 0.62, 0.67, 0.73, 0.77, 0.83]
+  2D1B:
+    tarifa_uf:  [2.20, 2.08, 1.80, 1.62, 1.50, 1.44, 1.56, 1.56, 1.68, 1.85, 2.02, 2.26]
+    ocupacion:  [0.84, 0.81, 0.71, 0.64, 0.59, 0.57, 0.61, 0.62, 0.67, 0.73, 0.77, 0.83]
+  2D2B:
+    tarifa_uf:  [2.60, 2.46, 2.12, 1.91, 1.77, 1.70, 1.84, 1.84, 1.98, 2.19, 2.39, 2.67]
+    ocupacion:  [0.85, 0.82, 0.72, 0.65, 0.60, 0.58, 0.62, 0.63, 0.68, 0.74, 0.78, 0.84]
+  2D3B:
+    tarifa_uf:  [2.85, 2.70, 2.33, 2.09, 1.94, 1.86, 2.02, 2.02, 2.17, 2.40, 2.62, 2.93]
+    ocupacion:  [0.83, 0.80, 0.70, 0.63, 0.58, 0.56, 0.60, 0.61, 0.66, 0.72, 0.76, 0.82]
+  3D2B:
+    tarifa_uf:  [3.10, 2.94, 2.53, 2.28, 2.11, 2.03, 2.20, 2.20, 2.36, 2.61, 2.85, 3.18]
+    ocupacion:  [0.82, 0.79, 0.69, 0.62, 0.57, 0.55, 0.59, 0.60, 0.65, 0.71, 0.75, 0.81]
+  3D3B:
+    tarifa_uf:  [3.40, 3.22, 2.78, 2.50, 2.32, 2.22, 2.41, 2.41, 2.59, 2.86, 3.13, 3.49]
+    ocupacion:  [0.82, 0.79, 0.69, 0.62, 0.57, 0.55, 0.59, 0.60, 0.65, 0.71, 0.75, 0.81]
+  3D4B:
+    tarifa_uf:  [3.60, 3.41, 2.94, 2.65, 2.45, 2.36, 2.55, 2.55, 2.74, 3.03, 3.31, 3.70]
+    ocupacion:  [0.80, 0.77, 0.67, 0.60, 0.55, 0.53, 0.57, 0.58, 0.63, 0.69, 0.73, 0.79]
+  4D3B:
+    tarifa_uf:  [3.90, 3.69, 3.19, 2.87, 2.66, 2.55, 2.77, 2.77, 2.97, 3.28, 3.59, 4.00]
+    ocupacion:  [0.78, 0.75, 0.65, 0.58, 0.53, 0.51, 0.55, 0.56, 0.61, 0.67, 0.71, 0.77]
+  4D4B:
+    tarifa_uf:  [4.20, 3.98, 3.43, 3.09, 2.86, 2.75, 2.98, 2.98, 3.20, 3.53, 3.86, 4.31]
+    ocupacion:  [0.78, 0.75, 0.65, 0.58, 0.53, 0.51, 0.55, 0.56, 0.61, 0.67, 0.71, 0.77]
+  _default:
+    tarifa_uf:  [2.60, 2.46, 2.12, 1.91, 1.77, 1.70, 1.84, 1.84, 1.98, 2.19, 2.39, 2.67]
+    ocupacion:  [0.80, 0.77, 0.67, 0.60, 0.55, 0.53, 0.57, 0.58, 0.63, 0.69, 0.73, 0.79]

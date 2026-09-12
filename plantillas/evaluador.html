@@ -1,0 +1,472 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Evaluador · departamentos para Airbnb</title>
+<style>
+:root{--tinta:#16181d;--papel:#fbfaf7;--linea:#d9d5cc;--suave:#6b6459;--rojo:#b3261e;
+--verde:#1f6f43;--azul:#1f4e96;--amarillo:#f0e6cc;--barra:#8aa5c8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel);color:var(--tinta);
+font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 60px}
+h1{font-size:22px;margin:22px 0 4px}
+h2{font-size:16px;margin:30px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--linea)}
+h3{font-size:13px;margin:16px 0 6px;color:var(--suave);text-transform:uppercase;letter-spacing:.06em}
+.sub{color:var(--suave);margin:0 0 16px}
+.aviso{background:#fdecea;border:1px solid var(--rojo);color:var(--rojo);
+padding:10px 14px;border-radius:6px;margin:14px 0;font-size:13px}
+.aviso b{display:block;margin-bottom:3px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--linea);padding:5px 8px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.tabla-scroll{overflow-x:auto}
+input,select{font:inherit;border:1px solid var(--linea);border-radius:4px;padding:3px 6px;
+background:#fff;width:100%;max-width:120px;text-align:right}
+input.nofirm{border-color:var(--rojo);background:#fff8f7;color:var(--rojo)}
+label{display:block;font-size:12px;color:var(--suave);margin-bottom:2px}
+.grid{display:grid;gap:10px 16px;grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
+.caja{border:1px solid var(--linea);border-radius:8px;padding:14px;background:#fff;margin:10px 0}
+.num{font-size:26px;font-weight:600;line-height:1.1}
+.num small{display:block;font-size:11px;font-weight:400;color:var(--suave);
+text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.tres{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.ok{color:var(--verde)} .mal{color:var(--rojo)}
+.pill{display:inline-block;padding:1px 7px;border-radius:99px;font-size:11px;
+background:var(--amarillo);color:#6b5a2a}
+svg{display:block;max-width:100%;height:auto}
+.leyenda{font-size:11px;color:var(--suave);margin-top:4px}
+.leyenda i{display:inline-block;width:9px;height:9px;border-radius:2px;margin:0 3px 0 10px}
+details{margin:8px 0}summary{cursor:pointer;color:var(--azul);font-size:13px}
+.mini{font-size:11px;color:var(--suave)}
+.heat td{text-align:center;font-variant-numeric:tabular-nums}
+.sel{max-width:none;text-align:left}
+@media(max-width:720px){.num{font-size:21px}}
+</style>
+<div class="wrap">
+<h1>Evaluador · departamentos para Airbnb</h1>
+<p class="sub">Providencia / Ñuñoa · polígono de 2,56 km² · un archivo, sin red.</p>
+<div id="banner"></div>
+
+<h2>1 · La UF y los supuestos</h2>
+<div class="caja">
+ <div class="grid" id="cabecera"></div>
+ <p class="mini" id="procedencia"></p>
+</div>
+<div class="caja"><h3>Crédito</h3><div class="grid" id="s-credito"></div></div>
+<div class="caja"><h3>Operación</h3><div class="grid" id="s-operacion"></div></div>
+<div class="caja"><h3>Retorno y venta</h3><div class="grid" id="s-retorno"></div></div>
+<div class="caja"><h3>Equipamiento · se repone según su vida útil</h3>
+ <div class="tabla-scroll"><table id="s-equipo"></table></div></div>
+<div class="caja"><h3>Curvas de 12 meses de la tipología seleccionada</h3>
+ <p class="mini">Enero no es julio. Por eso son curvas y no un promedio.</p>
+ <div class="tabla-scroll"><table id="s-curvas"></table></div></div>
+
+<h2>2 · La propiedad</h2>
+<div class="caja">
+ <div class="grid">
+  <div><label>Propiedad del ranking</label><select id="prop" class="sel"></select></div>
+  <div><label>Precio (UF)</label><input id="precio" type="number" step="1"></div>
+  <div><label>Tipología</label><input id="tipo" disabled></div>
+  <div><label>m²</label><input id="m2" type="number" step="1"></div>
+ </div>
+</div>
+<div class="tres" id="tres"></div>
+<p class="mini" id="nota-tres"></p>
+
+<h2>3 · La cuota</h2>
+<div class="caja"><div class="grid" id="resumen-cuota"></div></div>
+<div class="caja"><h3>Composición del dividendo en el tiempo</h3><div id="g-composicion"></div>
+ <div class="leyenda"><i style="background:#c0543f"></i>Interés<i style="background:#8aa5c8"></i>Amortización<i style="background:#c9c2b4"></i>Seguros</div></div>
+<div class="caja"><h3>Acceso al crédito según tu renta</h3>
+ <div class="grid" id="acceso"></div><p id="veredicto"></p></div>
+
+<h2>4 · Sensibilidad de la cuota · tasa contra bono pie</h2>
+<p class="sub">Cuota mensual en pesos. El bono pie baja el crédito.</p>
+<div class="caja tabla-scroll"><table class="heat" id="heat"></table></div>
+
+<h2>5 · Punto de equilibrio y retorno en el tiempo</h2>
+<div class="caja"><h3>Flujo acumulado · cuándo se recupera la inversión</h3><div id="g-payback"></div></div>
+<div class="caja"><h3>Flujo mensual del año 1</h3><div id="g-mensual"></div>
+ <div class="leyenda"><i style="background:#1f6f43"></i>Positivo<i style="background:#b3261e"></i>Negativo</div></div>
+<div class="caja"><h3>VPN contra la tasa de descuento</h3><div id="g-vpn"></div></div>
+
+<h2>6 · Flujo de caja</h2>
+<div class="caja"><h3>Mensual · primer año</h3><div class="tabla-scroll"><table id="t-mensual"></table></div></div>
+<div class="caja"><h3>Anual · el plazo completo del crédito</h3><div class="tabla-scroll"><table id="t-anual"></table></div></div>
+
+<h2>7 · Escenario de venta</h2>
+<div class="caja"><div class="grid" id="venta"></div><div class="tres" id="tres-venta"></div></div>
+
+<h2>8 · Comparación lado a lado</h2>
+<p class="sub">Se recalcula sola cuando movés cualquier supuesto de arriba.</p>
+<div class="caja">
+ <label>Propiedades a comparar (ctrl/cmd para varias)</label>
+ <select id="comparar" class="sel" multiple size="8"></select>
+</div>
+<div class="caja tabla-scroll"><table id="t-comparar"></table></div>
+</div>
+<script>
+const DATOS = __DATOS__;
+const S = JSON.parse(JSON.stringify(DATOS.supuestos));
+const DIAS = [31,28,31,30,31,30,31,31,30,31,30,31];
+const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const SIN_FIRMAR = S.firma.estado !== 'FIRMADO';
+
+const fmt = (x,d=1)=> (x===null||x===undefined||!isFinite(x)) ? '—'
+  : x.toLocaleString('es-CL',{minimumFractionDigits:d,maximumFractionDigits:d});
+const clp = x => !isFinite(x) ? '—' : '$'+Math.round(x*S.uf.valor).toLocaleString('es-CL');
+const pct = (x,d=1)=> !isFinite(x) ? '—' : fmt(x*100,d)+'%';
+
+/* ---------- las formulas ---------- */
+function tasaMensual(anual){
+  return S.credito.conversion_tasa==='nominal' ? anual/12 : Math.pow(1+anual,1/12)-1;
+}
+function cuotaFrancesa(C,i,n){ return i===0 ? C/n : C*i/(1-Math.pow(1+i,-n)); }
+
+function credito(P, over){
+  const c = Object.assign({}, S.credito, over||{});
+  const pie = P*c.pie_pct;
+  const C = Math.max(0, P - pie - c.bono_pie_uf);      // el bono pie baja el credito
+  const i = S.credito.conversion_tasa==='nominal' ? c.tasa_anual/12
+          : Math.pow(1+c.tasa_anual,1/12)-1;
+  const n = c.plazo_meses;
+  const cuota = cuotaFrancesa(C,i,n);
+  const filas=[]; let saldo=C;
+  for(let t=1;t<=n;t++){
+    const interes = saldo*i, amort = cuota-interes;
+    const desg = saldo*c.seguro_desgravamen_mensual;
+    const inc  = P*c.seguro_incendio_mensual;
+    filas.push({t,interes,amort,saldo:saldo-amort,desg,inc,dividendo:cuota+desg+inc});
+    saldo -= amort;
+  }
+  return {pie, C, i, n, cuota, filas,
+          gastos: P*c.gastos_operacionales_pct,
+          desembolso: pie + P*c.gastos_operacionales_pct};
+}
+
+function curvas(tip){ return S.tipologias[tip] || S.tipologias._default; }
+
+function operacion(tip, m){                     // un mes calendario, en UF
+  const c = curvas(tip), o = S.operacion;
+  const disp = Math.max(0, DIAS[m] - o.dias_bloqueados_mes);
+  const ocup = disp * c.ocupacion[m];
+  const bruto = c.tarifa_uf[m] * ocup;
+  const comision = bruto*o.comision_plataforma, admin = bruto*o.administracion;
+  const aseo = (ocup/o.estadia_media_noches)*o.costo_aseo_uf;
+  const variables = ocup*o.costo_por_noche_uf;
+  const fijos = o.gastos_comunes_uf + o.contribuciones_anual_uf/12 + o.internet_uf + o.seguro_contenido_uf;
+  const prov = S.equipamiento.reduce((a,e)=>a+e.valor_uf/e.vida_util_meses,0);
+  return {disp,ocup,bruto,comision,admin,aseo,variables,fijos,prov,
+          operacional: bruto-comision-admin-aseo-variables-fijos-prov};
+}
+
+function equipamientoInicial(){ return S.equipamiento.reduce((a,e)=>a+e.valor_uf,0); }
+
+function modelo(prop){
+  const cr = credito(prop.precio_uf);
+  const I0 = cr.desembolso + equipamientoInicial();
+  const flujos=[]; let acum=-I0, payback=null;
+  for(let t=1;t<=cr.n;t++){
+    const op = operacion(prop.tipologia,(t-1)%12);
+    const neto = op.operacional - cr.filas[t-1].dividendo;
+    acum += neto;
+    if(payback===null && acum>=0) payback=t;
+    flujos.push({t,op,div:cr.filas[t-1].dividendo,neto,acum});
+  }
+  // ocupacion de equilibrio: la ocupacion constante que deja el ano 1 en cero
+  const o=S.operacion, c=curvas(prop.tipologia);
+  let R=0,V=0,F=0;
+  for(let m=0;m<12;m++){
+    const disp=Math.max(0,DIAS[m]-o.dias_bloqueados_mes);
+    R += c.tarifa_uf[m]*disp;
+    V += disp*o.costo_por_noche_uf + (disp/o.estadia_media_noches)*o.costo_aseo_uf;
+    F += o.gastos_comunes_uf + o.contribuciones_anual_uf/12 + o.internet_uf + o.seguro_contenido_uf
+       + S.equipamiento.reduce((a,e)=>a+e.valor_uf/e.vida_util_meses,0)
+       + cr.filas[m].dividendo;
+  }
+  const den = R*(1-o.comision_plataforma-o.administracion) - V;
+  const ocupEq = den>0 ? F/den : Infinity;
+  return {cr,I0,flujos,payback,ocupEq,
+          flujoMes1: flujos.slice(0,12).reduce((a,f)=>a+f.neto,0)/12};
+}
+
+function ventaYVpn(prop, M, anio, tasaDesc, plusvalia){
+  const rm = Math.pow(1+tasaDesc,1/12)-1, meses = Math.min(anio*12, M.cr.n);
+  const precioV = prop.precio_uf*Math.pow(1+plusvalia,anio);
+  const costoV = precioV*S.retorno.comision_corredor;
+  const saldo = meses>0 ? M.cr.filas[meses-1].saldo : M.cr.C;
+  const neto = precioV - costoV - saldo;
+  let vpn = -M.I0, suma=0;
+  for(let t=1;t<=meses;t++){ vpn += M.flujos[t-1].neto/Math.pow(1+rm,t); suma += M.flujos[t-1].neto; }
+  vpn += neto/Math.pow(1+rm,meses);
+  return {precioV,costoV,saldo,neto,vpn,roi:(suma+neto-M.I0)/M.I0,meses};
+}
+
+/* ---------- graficos, SVG a mano ---------- */
+function ejes(w,h,p){ return {w,h,p,x:v=>p+v*(w-2*p),y:v=>h-p-v*(h-2*p)}; }
+function linea(datos,{w=900,h=220,cero=true,color='#1f4e96',etiquetaX=''}={}){
+  const p=34,g=ejes(w,h,p);
+  const ys=datos.map(d=>d.y), max=Math.max(...ys,0), min=Math.min(...ys,0);
+  const rango=(max-min)||1;
+  const px=i=>g.x(datos.length<2?0:i/(datos.length-1)), py=v=>g.y((v-min)/rango);
+  const d=datos.map((pt,i)=>`${i?'L':'M'}${px(i).toFixed(1)},${py(pt.y).toFixed(1)}`).join('');
+  const y0=py(0);
+  let cruce='';
+  if(cero) for(let i=1;i<datos.length;i++) if(datos[i-1].y<0&&datos[i].y>=0){
+    cruce=`<circle cx="${px(i).toFixed(1)}" cy="${y0.toFixed(1)}" r="4" fill="#1f6f43"/>
+    <text x="${px(i)+7}" y="${y0-7}" font-size="11" fill="#1f6f43">${datos[i].etq||''}</text>`;break;}
+  return `<svg viewBox="0 0 ${w} ${h}" role="img">
+   <line x1="${p}" y1="${y0}" x2="${w-p}" y2="${y0}" stroke="#c9c2b4"/>
+   <path d="${d}" fill="none" stroke="${color}" stroke-width="2"/>
+   ${cruce}
+   <text x="${p}" y="14" font-size="11" fill="#6b6459">${fmt(max,0)}</text>
+   <text x="${p}" y="${h-6}" font-size="11" fill="#6b6459">${fmt(min,0)}</text>
+   <text x="${w-p}" y="${h-6}" font-size="11" fill="#6b6459" text-anchor="end">${etiquetaX}</text>
+  </svg>`;
+}
+function barras(datos,{w=900,h=200}={}){
+  const p=30,g=ejes(w,h,p);
+  const max=Math.max(...datos.map(d=>Math.abs(d.y)))||1;
+  const bw=(w-2*p)/datos.length*0.72;
+  const y0=g.y(0.5);
+  return `<svg viewBox="0 0 ${w} ${h}">
+   <line x1="${p}" y1="${y0}" x2="${w-p}" y2="${y0}" stroke="#c9c2b4"/>
+   ${datos.map((d,i)=>{const x=p+(i+0.14)*(w-2*p)/datos.length;
+     const alto=Math.abs(d.y)/max*(h-2*p)/2;
+     const y=d.y>=0?y0-alto:y0;
+     return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${alto.toFixed(1)}"
+      fill="${d.y>=0?'#1f6f43':'#b3261e'}"/>
+      <text x="${(x+bw/2).toFixed(1)}" y="${h-8}" font-size="10" fill="#6b6459" text-anchor="middle">${d.x}</text>`;
+   }).join('')}
+  </svg>`;
+}
+function areas(series,{w=900,h=220}={}){
+  const p=30,g=ejes(w,h,p), n=series[0].datos.length;
+  const tot=series[0].datos.map((_,i)=>series.reduce((a,s)=>a+s.datos[i],0));
+  const max=Math.max(...tot)||1;
+  let base=new Array(n).fill(0), out='';
+  for(const s of series){
+    const arriba=base.map((b,i)=>b+s.datos[i]);
+    const px=i=>g.x(i/(n-1));
+    const d='M'+arriba.map((v,i)=>`${px(i).toFixed(1)},${g.y(v/max).toFixed(1)}`).join('L')
+      +'L'+base.map((v,i)=>`${px(n-1-i).toFixed(1)},${g.y(base[n-1-i]/max).toFixed(1)}`).join('L')+'Z';
+    out+=`<path d="${d}" fill="${s.color}" opacity=".9"/>`;
+    base=arriba;
+  }
+  return `<svg viewBox="0 0 ${w} ${h}">${out}
+   <text x="${p}" y="14" font-size="11" fill="#6b6459">${fmt(max,1)} UF</text>
+   <text x="${w-p}" y="${h-6}" font-size="11" fill="#6b6459" text-anchor="end">mes ${n}</text></svg>`;
+}
+
+/* ---------- pintar ---------- */
+const $ = s => document.querySelector(s);
+function campo(id,val,paso,titulo){
+  return `<div><label title="${titulo||''}">${titulo||id}</label>
+   <input data-ruta="${id}" type="number" step="${paso}" value="${val}"
+   class="${SIN_FIRMAR&&!id.startsWith('uf.')?'nofirm':''}"></div>`;
+}
+function pintarSupuestos(){
+  $('#banner').innerHTML = SIN_FIRMAR ? `<div class="aviso"><b>Supuestos sin firmar.</b>
+    Las tarifas, ocupaciones y costos de este archivo <b>no fueron observados</b>: son de arranque,
+    para ver el mecanismo. No sirven para decidir una compra. Los campos en rojo son los que hay que
+    reemplazar mirando Airbnb en la zona y firmar (item 07 del backlog).</div>` : '';
+  $('#cabecera').innerHTML =
+    campo('uf.valor',S.uf.valor,0.01,'UF en pesos') +
+    `<div><label>Fecha de la UF</label><input value="${S.uf.fecha}" disabled></div>` +
+    `<div><label>Conversión de tasa</label><select data-ruta="credito.conversion_tasa">
+      <option value="equivalente">equivalente (1+a)^(1/12)−1</option>
+      <option value="nominal">nominal a/12</option></select></div>`;
+  $('#cabecera').querySelector('select').value = S.credito.conversion_tasa;
+  $('#procedencia').textContent =
+    `UF del ${S.uf.fecha}, tomada de ${S.uf.fuente} · supuestos.yaml sha256 ${DATOS.hash_supuestos.slice(0,16)}… · ${S.firma.estado}`;
+  $('#s-credito').innerHTML = [
+    campo('credito.pie_pct',S.credito.pie_pct,0.01,'Pie (fracción)'),
+    campo('credito.bono_pie_uf',S.credito.bono_pie_uf,1,'Bono pie (UF)'),
+    campo('credito.tasa_anual',S.credito.tasa_anual,0.001,'Tasa anual'),
+    campo('credito.plazo_meses',S.credito.plazo_meses,12,'Plazo (meses)'),
+    campo('credito.seguro_desgravamen_mensual',S.credito.seguro_desgravamen_mensual,0.00001,'Desgravamen mensual'),
+    campo('credito.seguro_incendio_mensual',S.credito.seguro_incendio_mensual,0.00001,'Incendio mensual'),
+    campo('credito.gastos_operacionales_pct',S.credito.gastos_operacionales_pct,0.001,'Gastos operacionales'),
+    campo('credito.carga_maxima_renta',S.credito.carga_maxima_renta,0.01,'Carga máx. de la renta'),
+  ].join('');
+  $('#s-operacion').innerHTML = Object.entries({
+    comision_plataforma:['Comisión plataforma',0.001], administracion:['Administración',0.01],
+    estadia_media_noches:['Estadía media (noches)',1], costo_aseo_uf:['Aseo por estadía (UF)',0.01],
+    costo_por_noche_uf:['Costo por noche (UF)',0.01], dias_bloqueados_mes:['Días bloqueados/mes',1],
+    gastos_comunes_uf:['Gastos comunes (UF)',0.1], contribuciones_anual_uf:['Contribuciones año (UF)',0.1],
+    internet_uf:['Internet (UF)',0.1], seguro_contenido_uf:['Seguro contenido (UF)',0.1],
+  }).map(([k,[t,p]])=>campo('operacion.'+k,S.operacion[k],p,t)).join('');
+  $('#s-retorno').innerHTML = [
+    campo('retorno.tasa_descuento',S.retorno.tasa_descuento,0.005,'Tasa de descuento'),
+    campo('retorno.plusvalia_anual',S.retorno.plusvalia_anual,0.005,'Plusvalía anual'),
+    campo('retorno.anio_venta',S.retorno.anio_venta,1,'Año de venta'),
+    campo('retorno.comision_corredor',S.retorno.comision_corredor,0.001,'Comisión corredor'),
+  ].join('');
+  $('#s-equipo').innerHTML = '<tr><th>Ítem</th><th>Valor UF</th><th>Vida útil (meses)</th><th>Provisión mensual UF</th></tr>'
+   + S.equipamiento.map((e,i)=>`<tr><td>${e.item}</td>
+     <td><input data-ruta="equipamiento.${i}.valor_uf" type="number" step="1" value="${e.valor_uf}" class="${SIN_FIRMAR?'nofirm':''}"></td>
+     <td><input data-ruta="equipamiento.${i}.vida_util_meses" type="number" step="1" value="${e.vida_util_meses}" class="${SIN_FIRMAR?'nofirm':''}"></td>
+     <td>${fmt(e.valor_uf/e.vida_util_meses,2)}</td></tr>`).join('');
+}
+function pintarCurvas(tip){
+  const c = curvas(tip);
+  const esDefault = !S.tipologias[tip];
+  $('#s-curvas').innerHTML =
+   `<tr><th>${tip}${esDefault?' <span class="pill">sin curva propia, usa la de respaldo</span>':''}</th>`
+   + MES.map(m=>`<th>${m}</th>`).join('') + '</tr>'
+   + `<tr><td>Tarifa noche (UF)</td>` + c.tarifa_uf.map((v,i)=>
+      `<td><input data-curva="tarifa_uf" data-tip="${tip}" data-i="${i}" type="number" step="0.05" value="${v}" class="${SIN_FIRMAR?'nofirm':''}"></td>`).join('') + '</tr>'
+   + `<tr><td>Ocupación</td>` + c.ocupacion.map((v,i)=>
+      `<td><input data-curva="ocupacion" data-tip="${tip}" data-i="${i}" type="number" step="0.01" value="${v}" class="${SIN_FIRMAR?'nofirm':''}"></td>`).join('') + '</tr>';
+}
+function propActual(){
+  const p = DATOS.propiedades.find(x=>x.id===$('#prop').value) || DATOS.propiedades[0];
+  return {id:p.id, tipologia:$('#tipo').value||p.tipologia,
+          precio_uf:+$('#precio').value||p.precio_uf, m2:+$('#m2').value||p.m2};
+}
+function pintarTodo(){
+  const prop = propActual();
+  pintarCurvas(prop.tipologia);
+  const M = modelo(prop);
+  const corte = 0.65;
+  const v = ventaYVpn(prop,M,S.retorno.anio_venta,S.retorno.tasa_descuento,S.retorno.plusvalia_anual);
+  const vpn30 = ventaYVpn(prop,M,Math.floor(M.cr.n/12),S.retorno.tasa_descuento,S.retorno.plusvalia_anual).vpn;
+
+  $('#tres').innerHTML = `
+   <div class="caja"><div class="num"><small>VPN a ${Math.floor(M.cr.n/12)} años · tasa ${pct(S.retorno.tasa_descuento)}</small>
+     <span class="${vpn30>=0?'ok':'mal'}">${fmt(vpn30,0)} UF</span></div>
+     <div class="mini">${clp(vpn30)}</div></div>
+   <div class="caja"><div class="num"><small>Ocupación de equilibrio · corte ${pct(corte,0)}</small>
+     <span class="${M.ocupEq<=corte?'ok':'mal'}">${isFinite(M.ocupEq)?pct(M.ocupEq):'no cierra'}</span></div>
+     <div class="mini">${isFinite(M.ocupEq)?(M.ocupEq<=corte?'pasa el corte':'queda afuera'):'no hay ocupación que alcance'}</div></div>
+   <div class="caja"><div class="num"><small>Flujo mensual año 1 · después del dividendo</small>
+     <span class="${M.flujoMes1>=0?'ok':'mal'}">${fmt(M.flujoMes1,2)} UF</span></div>
+     <div class="mini">${clp(M.flujoMes1)} promedio de los 12 meses</div></div>`;
+  $('#nota-tres').textContent = 'Los tres números no se combinan. La ocupación de equilibrio es la que ordena y descarta.';
+
+  $('#resumen-cuota').innerHTML = [
+    ['Precio', fmt(prop.precio_uf,0)+' UF'], ['Pie', fmt(M.cr.pie,0)+' UF'],
+    ['Bono pie', fmt(S.credito.bono_pie_uf,0)+' UF'], ['Crédito', fmt(M.cr.C,0)+' UF'],
+    ['Tasa mensual', pct(M.cr.i,4)], ['Cuota', fmt(M.cr.cuota,2)+' UF'],
+    ['Dividendo mes 1', fmt(M.cr.filas[0].dividendo,2)+' UF'],
+    ['Dividendo mes 1 en pesos', clp(M.cr.filas[0].dividendo)],
+    ['Inversión inicial', fmt(M.I0,0)+' UF'], ['Inversión inicial en pesos', clp(M.I0)],
+  ].map(([k,val])=>`<div><label>${k}</label><div style="font-weight:600">${val}</div></div>`).join('');
+
+  const paso = Math.max(1,Math.round(M.cr.n/120));
+  const idx = M.cr.filas.filter((_,i)=>i%paso===0);
+  $('#g-composicion').innerHTML = areas([
+    {color:'#c0543f',datos:idx.map(f=>f.interes)},
+    {color:'#8aa5c8',datos:idx.map(f=>f.amort)},
+    {color:'#c9c2b4',datos:idx.map(f=>f.desg+f.inc)}]);
+
+  const renta = +($('#renta')?$('#renta').value:0) || S.credito.renta_liquida_clp || 0;
+  const divClp = M.cr.filas[0].dividendo*S.uf.valor;
+  const minima = divClp/S.credito.carga_maxima_renta;
+  $('#acceso').innerHTML = `<div><label>Tu renta líquida mensual (CLP)</label>
+    <input id="renta" type="number" step="50000" value="${renta}"></div>
+    <div><label>Renta mínima requerida</label><div style="font-weight:600">$${Math.round(minima).toLocaleString('es-CL')}</div></div>
+    <div><label>Dividendo</label><div style="font-weight:600">$${Math.round(divClp).toLocaleString('es-CL')}</div></div>
+    <div><label>Carga sobre tu renta</label><div style="font-weight:600">${renta>0?pct(divClp/renta):'—'}</div></div>`;
+  $('#veredicto').innerHTML = renta<=0 ? '<span class="mini">Poné tu renta líquida para ver el veredicto.</span>'
+    : (divClp/renta<=S.credito.carga_maxima_renta
+       ? `<span class="ok"><b>Pasa.</b> El dividendo es el ${pct(divClp/renta)} de tu renta, bajo el ${pct(S.credito.carga_maxima_renta,0)}.</span>`
+       : `<span class="mal"><b>No pasa.</b> El dividendo es el ${pct(divClp/renta)} de tu renta, sobre el ${pct(S.credito.carga_maxima_renta,0)}. Te faltan $${Math.round(minima-renta).toLocaleString('es-CL')}.</span>`);
+  $('#renta').oninput = pintarTodo;
+
+  const tasas=[], base=S.credito.tasa_anual;
+  for(let k=-4;k<=4;k++) tasas.push(base+k*0.0025);
+  const bonos=[0,0.02,0.04,0.06,0.08,0.10].map(f=>prop.precio_uf*f);
+  $('#heat').innerHTML = '<tr><th>Tasa \\ Bono pie</th>'
+    + bonos.map(b=>`<th>${fmt(b,0)} UF</th>`).join('') + '</tr>'
+    + tasas.map(t=>{
+       const celdas = bonos.map(b=>{
+         const c = credito(prop.precio_uf,{tasa_anual:t,bono_pie_uf:b});
+         const d = c.filas[0].dividendo*S.uf.valor;
+         return `<td>$${Math.round(d).toLocaleString('es-CL')}</td>`;}).join('');
+       return `<tr><td>${pct(t,2)}</td>${celdas}</tr>`;}).join('');
+
+  const anios = Math.floor(M.cr.n/12);
+  $('#g-payback').innerHTML = linea(
+    M.flujos.filter((_,i)=>i%3===0).map(f=>({y:f.acum, etq:'mes '+f.t})),
+    {etiquetaX:`${anios} años · UF acumuladas`});
+  $('#g-payback').insertAdjacentHTML('beforeend',
+    `<p class="mini">${M.payback?`Se recupera la inversión en el mes ${M.payback} (año ${(M.payback/12).toFixed(1)}).`
+      :'No se recupera dentro del plazo del crédito.'}</p>`);
+  $('#g-mensual').innerHTML = barras(M.flujos.slice(0,12).map((f,i)=>({x:MES[i],y:f.neto})));
+  const puntos=[]; for(let r=0.02;r<=0.20001;r+=0.005)
+    puntos.push({y:ventaYVpn(prop,M,S.retorno.anio_venta,r,S.retorno.plusvalia_anual).vpn});
+  $('#g-vpn').innerHTML = linea(puntos,{etiquetaX:'tasa de descuento 2% → 20%',color:'#1f4e96'});
+
+  $('#t-mensual').innerHTML = '<tr><th>Mes</th><th>Ocupación</th><th>Noches</th><th>Ingreso</th>'
+   +'<th>Comisión+adm</th><th>Aseo+var</th><th>Fijos</th><th>Provisión</th><th>Dividendo</th><th>Flujo</th></tr>'
+   + M.flujos.slice(0,12).map((f,i)=>`<tr><td>${MES[i]}</td><td>${pct(curvas(prop.tipologia).ocupacion[i],0)}</td>
+     <td>${fmt(f.op.ocup,1)}</td><td>${fmt(f.op.bruto,2)}</td><td>${fmt(-(f.op.comision+f.op.admin),2)}</td>
+     <td>${fmt(-(f.op.aseo+f.op.variables),2)}</td><td>${fmt(-f.op.fijos,2)}</td><td>${fmt(-f.op.prov,2)}</td>
+     <td>${fmt(-f.div,2)}</td><td class="${f.neto>=0?'ok':'mal'}">${fmt(f.neto,2)}</td></tr>`).join('')
+   + `<tr><td><b>Año 1</b></td><td></td><td></td><td><b>${fmt(M.flujos.slice(0,12).reduce((a,f)=>a+f.op.bruto,0),1)}</b></td>
+      <td colspan="5"></td><td><b class="${M.flujoMes1>=0?'ok':'mal'}">${fmt(M.flujos.slice(0,12).reduce((a,f)=>a+f.neto,0),1)}</b></td></tr>`;
+
+  let filasA=''; for(let a=1;a<=anios;a++){
+    const tr = M.flujos.slice((a-1)*12,a*12);
+    const ing=tr.reduce((x,f)=>x+f.op.bruto,0), div=tr.reduce((x,f)=>x+f.div,0);
+    const neto=tr.reduce((x,f)=>x+f.neto,0);
+    filasA += `<tr><td>${a}</td><td>${fmt(ing,0)}</td><td>${fmt(-div,0)}</td>
+      <td class="${neto>=0?'ok':'mal'}">${fmt(neto,0)}</td><td>${fmt(tr[tr.length-1].acum,0)}</td></tr>`;}
+  $('#t-anual').innerHTML = '<tr><th>Año</th><th>Ingreso UF</th><th>Dividendo UF</th><th>Flujo UF</th><th>Acumulado UF</th></tr>'+filasA;
+
+  $('#venta').innerHTML = [
+    ['Precio de venta', fmt(v.precioV,0)+' UF'], ['Comisión corredor', fmt(-v.costoV,0)+' UF'],
+    ['Saldo del crédito', fmt(-v.saldo,0)+' UF'], ['Neto de la venta', fmt(v.neto,0)+' UF'],
+  ].map(([k,val])=>`<div><label>${k}</label><div style="font-weight:600">${val}</div></div>`).join('');
+  $('#tres-venta').innerHTML = `
+   <div class="caja"><div class="num"><small>VPN al año ${S.retorno.anio_venta}</small>
+    <span class="${v.vpn>=0?'ok':'mal'}">${fmt(v.vpn,0)} UF</span></div><div class="mini">${clp(v.vpn)}</div></div>
+   <div class="caja"><div class="num"><small>ROI al año ${S.retorno.anio_venta}</small>
+    <span class="${v.roi>=0?'ok':'mal'}">${pct(v.roi)}</span></div>
+    <div class="mini">sobre una inversión de ${fmt(M.I0,0)} UF</div></div>`;
+
+  const elegidas = [...$('#comparar').selectedOptions].map(o=>o.value);
+  const lista = (elegidas.length?elegidas:DATOS.propiedades.slice(0,4).map(p=>p.id))
+    .map(id=>DATOS.propiedades.find(p=>p.id===id)).filter(Boolean);
+  $('#t-comparar').innerHTML = '<tr><th>Propiedad</th><th>Tipología</th><th>Precio UF</th><th>UF/m²</th>'
+   +'<th>Ocup. equilibrio</th><th>Flujo mes año 1</th><th>VPN año '+S.retorno.anio_venta+'</th><th>ROI</th><th>Payback</th></tr>'
+   + lista.map(p=>{
+      const m=modelo(p), vv=ventaYVpn(p,m,S.retorno.anio_venta,S.retorno.tasa_descuento,S.retorno.plusvalia_anual);
+      return `<tr><td>${p.id}</td><td>${p.tipologia}</td><td>${fmt(p.precio_uf,0)}</td><td>${fmt(p.uf_m2,1)}</td>
+       <td class="${m.ocupEq<=corte?'ok':'mal'}">${isFinite(m.ocupEq)?pct(m.ocupEq):'no cierra'}</td>
+       <td class="${m.flujoMes1>=0?'ok':'mal'}">${fmt(m.flujoMes1,2)}</td>
+       <td class="${vv.vpn>=0?'ok':'mal'}">${fmt(vv.vpn,0)}</td><td>${pct(vv.roi)}</td>
+       <td>${m.payback?'mes '+m.payback:'—'}</td></tr>`;}).join('');
+}
+
+/* ---------- arranque ---------- */
+function ponerRuta(obj,ruta,val){
+  const ps=ruta.split('.'); let o=obj;
+  for(let i=0;i<ps.length-1;i++) o=o[ps[i]];
+  o[ps[ps.length-1]] = isNaN(+val)?val:+val;
+}
+pintarSupuestos();
+const opciones = DATOS.propiedades.map(p=>
+  `<option value="${p.id}">${p.tipologia} · ${fmt(p.precio_uf,0)} UF · ${p.m2} m² · ${fmt(p.uf_m2,1)} UF/m² · ${p.id}</option>`).join('');
+$('#prop').innerHTML = opciones; $('#comparar').innerHTML = opciones;
+function sincronizarProp(){
+  const p = DATOS.propiedades.find(x=>x.id===$('#prop').value);
+  $('#precio').value=p.precio_uf; $('#tipo').value=p.tipologia; $('#m2').value=p.m2;
+}
+sincronizarProp();
+document.addEventListener('input', e=>{
+  const t=e.target;
+  if(t.dataset.ruta){ ponerRuta(S,t.dataset.ruta,t.value); pintarTodo(); }
+  else if(t.dataset.curva){ const c=curvas(t.dataset.tip);
+    if(!S.tipologias[t.dataset.tip]) S.tipologias[t.dataset.tip]=JSON.parse(JSON.stringify(c));
+    S.tipologias[t.dataset.tip][t.dataset.curva][+t.dataset.i]=+t.value; pintarTodo(); }
+  else if(['precio','m2'].includes(t.id)) pintarTodo();
+});
+document.addEventListener('change', e=>{
+  if(e.target.id==='prop'){ sincronizarProp(); pintarTodo(); }
+  else if(e.target.id==='comparar') pintarTodo();
+  else if(e.target.dataset.ruta){ ponerRuta(S,e.target.dataset.ruta,e.target.value); pintarTodo(); }
+});
+pintarTodo();
+</script>

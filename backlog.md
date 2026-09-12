@@ -279,48 +279,64 @@ elige.
 
 ---
 
-## 07 · Supuestos propios
+## 07 · Supuestos propios  · bloqueado
 
 ```
-estado:      pendiente
+estado:      bloqueado · 2026-09-12 · existe el archivo, falta firmarlo
 depende de:  06
 entrega:     supuestos.yaml propio, firmado y fechado
 cierra si:   está firmado por Isidora con fecha ·
              las tarifas y ocupaciones salen de mirar Airbnb en la zona, no del archivo de referencia
 ```
 
-El `supuestos.yaml` del taller es un punto de partida de otra persona. El archivo
-mismo lo dice: *"la primera tarea seria es reemplazarlos mirando Airbnb en la zona y
-firmar los propios"*.
+El `supuestos.yaml` del taller **no estaba disponible**: `taller-mba-uc/` está en
+`.gitignore` como "se obtiene con git clone" y no existe en el entorno; el acceso a
+GitHub de esta sesión está limitado a `inavarrog1/airbnb`. Isidora pidió usar los del
+taller y no se pudo.
+
+Lo que hay entonces es un `supuestos.yaml` con **la estructura completa que piden las
+fórmulas** y valores de arranque **marcados como NO OBSERVADOS**, con
+`firma.estado: SIN_FIRMAR`. Inventar tarifas plausibles habría sido exactamente lo que
+prohíbe la regla 4, y encima habrían salido con cara de dato real. El evaluador los
+muestra en rojo y con banner mientras sigan sin firmar.
+
+**Para desbloquear:** pegar el archivo del taller, o reemplazar las curvas mirando
+Airbnb en la zona y poner `firma.firmado_por` y `firma.fecha`.
 
 ---
 
-## 08 · evaluador — el modelo financiero
+## 08 · evaluador — el modelo financiero  · en curso
 
 ```
-estado:      pendiente
-depende de:  07
-entrega:     evaluador.html — un archivo, sin dependencias, abre con doble clic
-cierra si:   abre sin red · los 3 números por propiedad ·
-             registra el hash de supuestos.yaml usado · la UF viene con su fecha
+estado:      en curso · 2026-09-12 · construido y verificado, con supuestos sin firmar
+depende de:  07 (bloqueado)
+entrega:     evaluador.html ✅ · plantillas/evaluador.html ✅ ·
+             scripts/construir_evaluador.py ✅ · scripts/verificar_evaluador.py ✅
+cierra si:   abre sin red ✅ · los 3 números por propiedad ✅ ·
+             registra el hash de supuestos.yaml usado ✅ · la UF viene con su fecha ✅ ·
+             los supuestos están firmados ⏳ (item 07)
 ```
 
-Antes de escribir una línea: mostrar las fórmulas de la cuota, el flujo y el punto de
-equilibrio para aprobación.
+**Las fórmulas se mostraron y se aprobaron antes de escribir una línea**, como pedía
+este item. Dos decisiones que tomó Isidora el 2026-09-12:
 
-Contenido acordado:
-- supuestos visibles y **editables en pantalla**
-- retorno y **punto de equilibrio** en gráficos según el tiempo
-- sensibilidad de la cuota mensual entre tasa y bono pie
-- composición de la cuota hipotecaria
-- UF actualizada desde el SII
-- verificación de acceso al crédito según renta
-- retorno contra tasa de descuento variable
-- flujo mensual del primer año y anual por el plazo del crédito
-- escenario de venta con plusvalía variable en año x, recalculando ROI y VPN
-- comparación lado a lado que se recalcula al mover un supuesto
+- **El bono pie baja el crédito** (`crédito = P − pie − bono`), no sólo el desembolso.
+  Es lo que hace que la matriz tasa × bono pie diga algo en sus dos ejes.
+- **La tasa mensual es la equivalente compuesta** `(1+anual)^(1/12) − 1`, no la
+  nominal dividida por 12. Da una cuota levemente menor, y es la que capitaliza igual
+  que la tasa anual declarada.
 
-**Ordena y descarta: ocupación de equilibrio, corte 65%.**
+**Cómo se verifica que los números son los que dicen las fórmulas:**
+`scripts/verificar_evaluador.py` abre el archivo en un Chromium de verdad, **recalcula
+la cuota, la ocupación de equilibrio y el flujo del año 1 en Python, aparte**, y las
+compara contra lo que muestra la pantalla. Si el HTML y la aritmética se separan, el
+chequeo se pone rojo. También verifica que no sale ninguna petición de red, que no hay
+errores de JavaScript, y que mover un supuesto recalcula la pantalla.
+
+**La UF y el "abre con doble clic" no se pueden tener los dos.** Un archivo local no
+puede pedirle la UF al SII: el navegador lo bloquea por CORS, y `specs.md` pide que
+abra sin red. La UF va **embebida con su fecha y su fuente** (40.910,10 del
+2026-09-12, del SII) y es editable en pantalla. Actualizarla es reconstruir.
 
 **→ Puerta 3.** Isidora mueve los supuestos y aprueba 1–3 en Notion.
 
