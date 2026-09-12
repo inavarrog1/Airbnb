@@ -89,33 +89,53 @@ sin fallar: los links de paginación que arma el portal **pierden el polígono**
 
 ---
 
-## 03 · buscador — snapshot crudo
+## 03 · buscador — snapshot crudo  · esperando puerta 1
 
 ```
-estado:      pendiente
-depende de:  02
-entrega:     scripts/buscador.py · runs/<fecha>/01-snapshot.json · manifest.json
-cierra si:   declara motivo de corte ∈ {página incompleta, tope, timeout} ·
-             0 IDs duplicados · 0 IDs vacíos ·
-             el crudo no fue modificado después de escrito
+estado:      en curso · 2026-09-12 · los chequeos dan verde, falta la puerta 1
+depende de:  02 ✅
+entrega:     scripts/buscador.py ✅ · runs/<fecha>/01-snapshot.json ✅ · manifest.json ✅
+cierra si:   declara motivo de corte ∈ {página incompleta, tope, timeout,
+             sin más páginas} ✅ · 0 IDs duplicados ✅ · 0 IDs vacíos ✅ ·
+             el crudo no fue modificado después de escrito ✅ ·
+             Isidora dice que el snapshot sirve (puerta 1) ← pendiente
 ```
 
-Corte: página incompleta · tope 500 · timeout 10 min. Lo primero que ocurra.
-El crudo se guarda **antes** de filtrar nada: si el parseo tiene un bug, no se
-vuelve a scrapear para arreglarlo.
+**El `cierra si` tenía un cuarto motivo faltante.** La lista original —{página
+incompleta, tope, timeout}— no cubre el caso en que el censo se termina y la última
+página viene **llena**, que es exactamente lo que pasa acá: el total (1.100) es
+múltiplo exacto del tamaño de página (100), así que la página 11 trae 100 avisos y la
+12 responde 404. Con la lista original, una corrida que trae la zona **completa** no
+puede declarar un motivo válido — el criterio castigaba justo el resultado que
+`specs.md` busca. Se agregó `sin más páginas` (`offset + avisos >= total`, o página
+siguiente sin avisos). Mismo tipo de corrección que la del item 01: el criterio estaba
+mal formulado, no el resultado.
 
-**Heredado del item 01, y ya no es un riesgo: es un hecho.** El item 02 contó la zona
-en vivo — **1.100 avisos contra un tope de 500**. Una corrida con el tope actual corta
-por tope y entrega las 500 primeras en orden comercial, que es la muestra sesgada que
-`specs.md` quiere evitar. Lo que el backlog manda para ese caso hay que hacerlo
-**antes** de la primera corrida, no después: tope al doble del conteo observado
-(2.200) y timeout de 20 minutos.
+**Dos corridas, a propósito.**
 
-El timeout no aprieta: las 11 páginas se traen en ~7 segundos por HTTP.
+| corrida | tope | motivo de corte | avisos |
+|---|---|---|---|
+| `runs/2026-09-12-1210` | 500 | **tope** | 500 |
+| `runs/2026-09-12-1210-2` | 2.200 | **sin más páginas** | **1.100 — censo completo** |
 
-**El motivo de corte va a ser `offset >= total` (la página siguiente da 404), no
-"página incompleta".** En esta zona el total es múltiplo exacto de 100, así que la
-última página viene llena; un corte que sólo mire "¿vino incompleta?" no dispara nunca.
+La primera se corrió con el tope de 500 de `specs.md` para dejar el corte por tope
+observado en el manifest y no supuesto. La segunda, con el tope al doble del conteo
+observado y timeout de 20 min, como manda este item para ese caso. Los 500 de la
+primera son un subconjunto exacto de los 1.100 de la segunda: 0 avisos que sólo
+aparezcan en la corrida corta, lo que confirma que la paginación es estable entre
+corridas.
+
+**El buscador trae por HTTP, no por navegador.** El item 02 mostró que el portal sirve
+el listado completo sin ejecutar JavaScript, así que el motivo por el que el diseño
+pedía navegador headless resultó falso. Queda `--navegador` como segunda vía, para la
+máquina local y para el día que el portal deje de servir el HTML armado. El parseo es
+el mismo para las dos.
+
+**Qué hay adentro del snapshot** (los 1.100): 1.069 en UF y 31 en CLP · 5 proyectos
+con precio "Desde" · 276 de 2 dormitorios y 366 de 3 · 2 avisos sin m² y 6 sin
+dormitorios, guardados vacíos y declarados vacíos · m² mediana 104, mínimo **2**
+(un aviso con 2 m² es dato del portal, no del parseo) · UF/m² mediana 94,1 con un
+máximo de 2.000 que sale de ese mismo aviso.
 
 **→ Puerta 1.** Acá para y espera revisión del snapshot.
 
