@@ -61,8 +61,46 @@ retorno:
   anio_venta: 10             # NO OBSERVADO · variable en pantalla
   comision_corredor: 0.02    # NO OBSERVADO · sobre el precio de venta
 
+
+# ---------------------------------------------------------------------------
+# ARRIENDO TRADICIONAL EN EL MISMO POLIGONO · ESTO SI FUE OBSERVADO
+#
+# Censo completo de arriendos del mismo poligono, corrida
+# runs/2026-09-12-1315-arriendo (429 avisos, corte por pagina incompleta).
+# Homologado a UF con la UF del 2026-09-12.
+#
+# Es el piso contra el que compite un Airbnb: si no rinde mas que arrendarlo a
+# un año, la operacion no se justifica — el Airbnb tiene trabajo, rotacion y
+# riesgo que el arriendo no tiene. Solo se reportan tipologias con 5 o mas
+# avisos, por la misma regla del analista.
+arriendo_observado:
+  observado: true
+  fuente: portalinmobiliario.com · mismo poligono · operacion arriendo
+  corrida: '2026-09-12-1315-arriendo'
+  fecha: '2026-09-12'
+  avisos_totales: 429
+  medianas:
+    1D1B: {n: 196, uf_mes: 17.21, m2_mediana: 40.0, uf_m2_mes: 0.43}
+    2D2B: {n: 80, uf_mes: 31.89, m2_mediana: 71.0, uf_m2_mes: 0.449}
+    3D3B: {n: 33, uf_mes: 45, m2_mediana: 130, uf_m2_mes: 0.346}
+    4D3B: {n: 23, uf_mes: 44, m2_mediana: 141, uf_m2_mes: 0.312}
+    3D2B: {n: 22, uf_mes: 29.33, m2_mediana: 91.5, uf_m2_mes: 0.321}
+    2D1B: {n: 19, uf_mes: 19.56, m2_mediana: 60, uf_m2_mes: 0.326}
+    2D3B: {n: 12, uf_mes: 61.11, m2_mediana: 168.0, uf_m2_mes: 0.364}
+    3D4B: {n: 11, uf_mes: 56.22, m2_mediana: 240, uf_m2_mes: 0.234}
+    1D2B: {n: 11, uf_mes: 26.89, m2_mediana: 74, uf_m2_mes: 0.363}
+    4D4B: {n: 7, uf_mes: 62, m2_mediana: 216, uf_m2_mes: 0.287}
+
 # Curvas de 12 meses, enero a diciembre. TODAS NO OBSERVADAS.
 # tarifa_uf: precio por noche, en UF.  ocupacion: fraccion de 0 a 1.
+#
+# LA OCUPACION NO ES OBSERVABLE EN AIRBNB. Va siempre con el proxy que la
+# produjo y su sesgo, declarados aca arriba y no en una nota al pie:
+ocupacion_metodo:
+  proxy: calendario_90d        # decidido el 2026-09-12
+  sesgo: sobreestima           # bloqueado no es vendido: el anfitrion tambien bloquea
+  muestra: null                # cuantos alojamientos se miraron · pendiente
+  observado: false             # airbnb.cl esta denegado por la politica de egreso
 tipologias:
   1D1B:
     tarifa_uf:  [1.90, 1.80, 1.55, 1.40, 1.30, 1.25, 1.35, 1.35, 1.45, 1.60, 1.75, 1.95]

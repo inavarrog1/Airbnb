@@ -279,29 +279,60 @@ elige.
 
 ---
 
-## 07 · Supuestos propios  · bloqueado
+## 07 · Supuestos propios  · bloqueado por la red
 
 ```
-estado:      bloqueado · 2026-09-12 · existe el archivo, falta firmarlo
+estado:      bloqueado · 2026-09-12 · falta el acceso a Airbnb y la firma
 depende de:  06
-entrega:     supuestos.yaml propio, firmado y fechado
-cierra si:   está firmado por Isidora con fecha ·
-             las tarifas y ocupaciones salen de mirar Airbnb en la zona, no del archivo de referencia
+entrega:     supuestos.yaml propio, firmado y fechado · metodo-supuestos.md ✅ ·
+             arriendo del mismo polígono, observado ✅
+cierra si:   está firmado por Isidora con fecha ⏳ ·
+             las tarifas y ocupaciones salen de mirar Airbnb en la zona ⏳
 ```
 
-El `supuestos.yaml` del taller **no estaba disponible**: `taller-mba-uc/` está en
-`.gitignore` como "se obtiene con git clone" y no existe en el entorno; el acceso a
-GitHub de esta sesión está limitado a `inavarrog1/airbnb`. Isidora pidió usar los del
-taller y no se pudo.
+**Airbnb está denegado por la política de egreso de la sesión.** `airbnb.cl`,
+`airbnb.com`, `api.airbnb.com` y `airdna.co` responden **403 en el CONNECT**; también
+`booking.com`, `cmfchile.cl` y `bcentral.cl`. De todo lo probado sólo llegan `sii.cl`
+y `portalinmobiliario.com`. Una denegación de política no se reintenta: se reporta.
+**Isidora va a habilitar `airbnb.cl` y `airbnb.com`**, y entonces se levanta la
+muestra siguiendo `metodo-supuestos.md`.
 
-Lo que hay entonces es un `supuestos.yaml` con **la estructura completa que piden las
-fórmulas** y valores de arranque **marcados como NO OBSERVADOS**, con
-`firma.estado: SIN_FIRMAR`. Inventar tarifas plausibles habría sido exactamente lo que
-prohíbe la regla 4, y encima habrían salido con cara de dato real. El evaluador los
-muestra en rojo y con banner mientras sigan sin firmar.
+**El hallazgo que no arregla habilitar el dominio: la ocupación no es observable.**
+Airbnb no publica cuántas noches se vendió un departamento. Todo número de ocupación
+—el del taller incluido— sale de un proxy. Decidido el 2026-09-12: **proxy
+`calendario_90d`, que sobreestima** porque una noche bloqueada no es una noche
+vendida. Queda declarado en el propio `supuestos.yaml`, arriba de las curvas, no en
+una nota al pie:
 
-**Para desbloquear:** pegar el archivo del taller, o reemplazar las curvas mirando
-Airbnb en la zona y poner `firma.firmado_por` y `firma.fecha`.
+```yaml
+ocupacion_metodo:
+  proxy: calendario_90d
+  sesgo: sobreestima
+  muestra: null          # pendiente
+  observado: false
+```
+
+**Lo que sí quedó observado: el arriendo tradicional del mismo polígono.**
+`runs/2026-09-12-1315-arriendo` — censo completo de **429 avisos**, corte por
+**página incompleta** (el primer motivo de corte natural que se dispara en una corrida
+real; el censo de venta cortaba por `sin_mas_paginas`). Medianas por tipología, en
+`supuestos.yaml` bajo `arriendo_observado`, marcado `observado: true`:
+
+| Tipología | n | mediana | en pesos |
+|---|---|---|---|
+| 1D1B | 196 | 17,21 UF/mes | $704.267 |
+| 2D2B | 80 | 31,89 UF/mes | $1.304.623 |
+| 3D3B | 33 | 45,00 UF/mes | $1.840.954 |
+| 3D2B | 22 | 29,33 UF/mes | $1.199.893 |
+
+Es el piso contra el que compite un Airbnb, y el evaluador ahora lo muestra como
+control de cordura: si el resultado operacional mensual no supera al arriendo mediano
+de esa tipología, la operación no se justifica — arrendarlo a un año da más y tiene
+menos trabajo. **El arriendo es dato observado; el Airbnb todavía sale de supuestos**,
+y el evaluador lo dice en la misma pantalla.
+
+**Para desbloquear:** habilitar `airbnb.cl` y `airbnb.com` en el entorno, levantar la
+muestra, y firmar.
 
 ---
 

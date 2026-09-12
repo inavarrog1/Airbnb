@@ -26,7 +26,10 @@ from zoneinfo import ZoneInfo
 from playwright.sync_api import sync_playwright
 
 # --- la zona, de specs.md "Zona confirmada" ---------------------------------
-RAIZ = "https://www.portalinmobiliario.com/venta/departamento/"
+# La operacion es parametro: el mismo poligono sirve para venta y para arriendo.
+# El arriendo es el piso contra el que compite un Airbnb (metodo-supuestos.md §3).
+RAIZ_FMT = "https://www.portalinmobiliario.com/{operacion}/departamento/"
+RAIZ = RAIZ_FMT.format(operacion="venta")
 LOC = ("item*location_lat:-33.43399063809945*-33.40676791096829,"
        "lon:-70.62473552398681*-70.57761447601318")
 POLY = ("polygon_location=n%7E%7CjEn%7CxmLgAjb%40L%7CZj%40xJ%60Gl%5BbBhZbBjKrF%60ObFbH%60GvQjDpFpKrHlL"
@@ -42,11 +45,12 @@ UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
 CHROME = os.environ.get("CHROME_PATH", "/opt/pw-browsers/chromium-1194/chrome-linux/chrome")
 
 
-def url_pagina(n):
+def url_pagina(n, operacion="venta"):
     """el token _Desde_N lleva el indice del primer aviso, no el numero de pagina
     (skill §2: la paginacion empieza en 1, _Desde_101 es la pagina 2)"""
     desde = "" if n == 1 else f"_Desde_{(n - 1) * TAM_PAGINA + 1}"
-    return f"{RAIZ}{desde}_DisplayType_M_{LOC}?{POLY}"
+    raiz = RAIZ_FMT.format(operacion=operacion)
+    return f"{raiz}{desde}_DisplayType_M_{LOC}?{POLY}"
 
 
 # --- parseo -----------------------------------------------------------------
@@ -150,11 +154,12 @@ class PorNavegador:
 
 # --- la corrida -------------------------------------------------------------
 
-def correr(tope, timeout_s, con_navegador, raiz_runs):
+def correr(tope, timeout_s, con_navegador, raiz_runs, operacion="venta"):
     inicio = datetime.now(TZ)
     # una carpeta por corrida. Si ya hay una corrida en este mismo minuto, esta va
     # al lado: el crudo de la anterior no se pisa nunca (CLAUDE.md §6)
-    base = Path(raiz_runs) / inicio.strftime("%Y-%m-%d-%H%M")
+    sufijo = "" if operacion == "venta" else f"-{operacion}"
+    base = Path(raiz_runs) / (inicio.strftime("%Y-%m-%d-%H%M") + sufijo)
     carpeta, n_sufijo = base, 1
     while (carpeta / "01-snapshot.json").exists():
         n_sufijo += 1
@@ -164,14 +169,14 @@ def correr(tope, timeout_s, con_navegador, raiz_runs):
     paginas, motivo, detalle, t0 = [], None, None, time.time()
     with sync_playwright() as p:
         fuente = PorNavegador(p) if con_navegador else PorHttp(p)
-        print(f"buscador · zona de specs.md · traida por {fuente.nombre} · "
-              f"tope={tope} · timeout={timeout_s}s")
+        print(f"buscador · zona de specs.md · operacion={operacion} · "
+              f"traida por {fuente.nombre} · tope={tope} · timeout={timeout_s}s")
         try:
             for n in range(1, MAX_PAGINAS + 1):
                 if time.time() - t0 > timeout_s:
                     motivo, detalle = "timeout", f"{round(time.time()-t0)}s antes de pedir la pagina {n}"
                     break
-                u = url_pagina(n)
+                u = url_pagina(n, operacion)
                 st, html = fuente.traer(u)
                 ents = entradas(html) if st == 200 else []
                 avs = avisos(ents)
@@ -218,7 +223,8 @@ def correr(tope, timeout_s, con_navegador, raiz_runs):
         "agente": "buscador",
         "corrida": carpeta.name,
         "momento": inicio.isoformat(),
-        "zona_url": url_pagina(1),
+        "operacion": operacion,
+        "zona_url": url_pagina(1, operacion),
         "traido_con": "navegador" if con_navegador else "http",
         "motivo_de_corte": motivo,
         "detalle_del_corte": detalle,
@@ -238,9 +244,9 @@ def correr(tope, timeout_s, con_navegador, raiz_runs):
             "agente": "buscador",
             "inicio": inicio.isoformat(), "fin": fin.isoformat(),
             "duracion_s": round((fin - inicio).total_seconds(), 1),
-            "leyo": ["la URL de la zona (specs.md · Zona confirmada)"],
+            "leyo": [f"la URL de la zona (specs.md · Zona confirmada) · operacion {operacion}"],
             "escribio": [archivo.name],
-            "parametros": {"tope": tope, "timeout_s": timeout_s,
+            "parametros": {"operacion": operacion, "tope": tope, "timeout_s": timeout_s,
                            "tam_pagina": TAM_PAGINA,
                            "traido_con": "navegador" if con_navegador else "http"},
             "motivo_de_corte": motivo,
@@ -304,5 +310,7 @@ if __name__ == "__main__":
     ap.add_argument("--navegador", action="store_true",
                     help="traer con Chromium en vez de HTTP (no corre en la sesion remota)")
     ap.add_argument("--runs", default="runs")
+    ap.add_argument("--operacion", default="venta", choices=["venta", "arriendo"],
+                    help="arriendo da el piso contra el que compite un Airbnb")
     a = ap.parse_args()
-    sys.exit(correr(a.tope, a.timeout, a.navegador, a.runs))
+    sys.exit(correr(a.tope, a.timeout, a.navegador, a.runs, a.operacion))
