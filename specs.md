@@ -83,6 +83,11 @@ comuna; este polígono está sobre Providencia/Ñuñoa y puede ser bastante meno
 el tope ahora sería protegerse contra una estimación con otra estimación. El conteo
 real lo da la primera corrida del `buscador`.
 
+**El conteo real llegó antes, en el item 02: 1.100 avisos** (11 páginas de 100,
+contadas en vivo el 2026-09-12). La estimación de 1.350 quedó 23% alta, pero la
+conclusión no cambia: 1.100 > 500, así que el tope muerde. Corresponde subirlo a 2.200
+y el timeout a 20 minutos **antes** de la primera corrida.
+
 **Qué hacer si la primera corrida corta por tope:** subir el tope al doble del conteo
 observado y el timeout a 20 min, y volver a correr. Queda anotado en el item 03 del
 backlog.
@@ -282,9 +287,15 @@ esos borradores alguien tuvo que aprobar, y para aprobar tuvo que mirar el model
 
 1. ~~**URL de la zona.**~~ **Resuelto el 2026-09-12** (item 01). Polígono de 2,56 km²,
    confirmado y medido. Ver "Zona confirmada" arriba.
-2. **Gramática del HTML del portal.** Hay que verificarla el día que se construya el
-   scraper, entrando a la página. Cualquier selector escrito hoy es una suposición.
-   El portal responde 302 a clientes sin JavaScript; hace falta navegador headless.
+2. ~~**Gramática del HTML del portal.**~~ **Resuelto el 2026-09-12** (item 02).
+   Documentada en el skill `gramatica-del-portal`, verificada contra la página y
+   re-verificable con `scripts/verificar_gramatica.py`.
+
+   Dos correcciones a lo que decía este punto: el portal **no responde 302 a clientes
+   sin JavaScript** — responde 403 al User-Agent de `curl` y 200 con el listado
+   completo servido a cualquier UA de navegador; y el censo real de la zona es de
+   **1.100 avisos**, no ~1.350, pero igual queda por encima del tope de 500 (ver el
+   riesgo de abajo y el item 03).
 
 ---
 

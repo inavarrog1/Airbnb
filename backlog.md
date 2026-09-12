@@ -14,10 +14,10 @@ puedan divergir.
 
 ---
 
-## 00 · Infraestructura del proyecto
+## 00 · Infraestructura del proyecto  ✅ CERRADO
 
 ```
-estado:      pendiente
+estado:      cerrado · 2026-09-12
 depende de:  —
 entrega:     .venv con playwright · estructura runs/ scripts/ skills/ · .gitignore
 cierra si:   `python -c "import playwright"` corre sin error ·
@@ -52,24 +52,40 @@ avisos contra un tope de 500. Se decidió no tocar el tope hasta tener el conteo
 
 ---
 
-## 02 · Skill del scraper — decodificar la gramática del portal
+## 02 · Skill del scraper — decodificar la gramática del portal  ✅ CERRADO
 
 ```
-estado:      pendiente
+estado:      cerrado · 2026-09-12
 depende de:  00, 01 ✅
-entrega:     .claude/skills/<nombre-a-definir>/SKILL.md
-cierra si:   el skill documenta cómo se arma la URL de listado, cómo pagina,
-             qué selector tiene cada card y qué campos trae ·
-             cada afirmación fue verificada abriendo la página, no asumida
+entrega:     .claude/skills/gramatica-del-portal/SKILL.md ✅ ·
+             scripts/verificar_gramatica.py ✅
+cierra si:   el skill documenta cómo se arma la URL de listado ✅ · cómo pagina ✅ ·
+             qué selector tiene cada card ✅ · qué campos trae ✅ ·
+             cada afirmación fue verificada abriendo la página, no asumida ✅
 ```
 
-Tres cosas conocidas de antemano, a confirmar en vivo:
-- el portal responde **302** a cualquier cliente que no ejecute JavaScript
-- la paginación **empieza en 1, no en 0** (calcular el offset como `(pagina-1)*48`
-  repite un resultado por página, y el deduplicado lo tapa)
-- hay avisos en CLP y otros en UF
+El skill se llama **`gramatica-del-portal`** y lo usan el `buscador` (item 03) y el
+`extractor-de-ficha` (item 09). Cada afirmación que contiene tiene un chequeo en
+`scripts/verificar_gramatica.py`, que la vuelve a correr contra el portal vivo y
+devuelve verde o rojo — un skill sobre un sitio ajeno se vence solo.
 
-Falta decidir el nombre del skill.
+**Las tres cosas que se daban por conocidas: una era falsa y dos estaban incompletas.**
+
+- *"El portal responde 302 sin JavaScript"* — **falso**. Responde 403 al User-Agent por
+  defecto de `curl` y 200 con HTML completo a cualquier UA de navegador. El listado
+  entero viene servido, sin ejecutar JavaScript.
+- *"La paginación empieza en 1"* — cierto, y el token es `_Desde_N` donde N es el
+  índice del primer aviso: `_Desde_101` es la página 2. Pero la página trae **100
+  avisos, no 48** (los 48 son de la vista lista, que además intercala tarjetas que no
+  son avisos).
+- *"Hay avisos en CLP y otros en UF"* — cierto y medido: **1.069 en UF y 31 en CLP**.
+  El JSON embebido los declara como `CLF` y `CLP` con el precio numérico, así que no
+  hay que adivinar la moneda desde un símbolo.
+
+Y tres trampas que no estaban previstas, todas del mismo tipo — cambian el universo
+sin fallar: los links de paginación que arma el portal **pierden el polígono**
+(1.100 → 4.085 avisos), `_OrderId_PRICE*ASC` lo pierde y encima ignora el orden, y
+`_BEDROOMS_2-2` lo ignora también. Por eso no se filtra nada en la URL.
 
 ---
 
@@ -88,11 +104,18 @@ Corte: página incompleta · tope 500 · timeout 10 min. Lo primero que ocurra.
 El crudo se guarda **antes** de filtrar nada: si el parseo tiene un bug, no se
 vuelve a scrapear para arreglarlo.
 
-**Heredado del item 01 — vigilar el tope.** La zona podría tener ~1.350 avisos contra
-un tope de 500. Si esta corrida corta por **tope** en vez de por **página incompleta**,
-el censo quedó incompleto y el ranking pasa a ser una muestra sesgada. En ese caso:
-subir el tope al doble del conteo observado, el timeout a 20 min, y volver a correr
-antes de seguir al item 04.
+**Heredado del item 01, y ya no es un riesgo: es un hecho.** El item 02 contó la zona
+en vivo — **1.100 avisos contra un tope de 500**. Una corrida con el tope actual corta
+por tope y entrega las 500 primeras en orden comercial, que es la muestra sesgada que
+`specs.md` quiere evitar. Lo que el backlog manda para ese caso hay que hacerlo
+**antes** de la primera corrida, no después: tope al doble del conteo observado
+(2.200) y timeout de 20 minutos.
+
+El timeout no aprieta: las 11 páginas se traen en ~7 segundos por HTTP.
+
+**El motivo de corte va a ser `offset >= total` (la página siguiente da 404), no
+"página incompleta".** En esta zona el total es múltiplo exacto de 100, así que la
+última página viene llena; un corte que sólo mire "¿vino incompleta?" no dispara nunca.
 
 **→ Puerta 1.** Acá para y espera revisión del snapshot.
 

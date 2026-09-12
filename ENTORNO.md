@@ -66,10 +66,8 @@ ls /opt/pw-browsers
 ## Red
 
 La sesión remota sale por un proxy con política de egreso. **`portalinmobiliario.com`
-está denegado** (403 en el CONNECT), así que el `buscador` y el `extractor-de-ficha`
-no pueden correr desde acá.
-
-Diagnóstico:
+está habilitado** (se verificó el 2026-09-12: el CONNECT pasa y el portal responde
+200). Antes estaba denegado con 403; si vuelve a estarlo, el diagnóstico es:
 
 ```
 curl -sS "$HTTPS_PROXY/__agentproxy/status"
@@ -77,3 +75,25 @@ curl -sS "$HTTPS_PROXY/__agentproxy/status"
 
 Nunca desactivar la verificación de TLS ni sacar `HTTPS_PROXY`. Una denegación de
 política no se reintenta: se reporta.
+
+## Lo que sigue sin poder correr desde acá: el navegador
+
+Que la red llegue no alcanza. **El motor de Chromium no atraviesa el proxy de
+egreso**: toda navegación muere con `net::ERR_CONNECTION_RESET`, y el estado del proxy
+lo registra como `ws_closed_mid_exchange` — el túnel se corta a mitad del intercambio.
+Se probó con y sin `proxy=` explícito, con UA de navegador, con HTTP/2 deshabilitado y
+bloqueando todos los subrecursos. Siempre igual.
+
+Lo que **sí** funciona desde la sesión remota:
+
+| Cliente | Resultado |
+|---|---|
+| `curl` con UA de navegador | 200 |
+| `APIRequestContext` de Playwright (stack HTTP, no el motor) | 200 |
+| `chromium.launch()` + `page.goto()` | `ERR_CONNECTION_RESET` |
+
+Chromium **arranca** bien y renderiza: sirve para verificar selectores contra HTML ya
+traído (`page.route(...).fulfill(...)`). Lo que no hace es ir a buscarlo él.
+
+Conclusión práctica: el `buscador` (item 03) y el `extractor-de-ficha` (item 09)
+siguen siendo trabajo de la máquina local — pero por el navegador, no por la red.
