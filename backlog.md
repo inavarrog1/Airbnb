@@ -89,16 +89,16 @@ sin fallar: los links de paginación que arma el portal **pierden el polígono**
 
 ---
 
-## 03 · buscador — snapshot crudo  · esperando puerta 1
+## 03 · buscador — snapshot crudo  ✅ CERRADO
 
 ```
-estado:      en curso · 2026-09-12 · los chequeos dan verde, falta la puerta 1
+estado:      cerrado · 2026-09-12 · puerta 1 cruzada
 depende de:  02 ✅
 entrega:     scripts/buscador.py ✅ · runs/<fecha>/01-snapshot.json ✅ · manifest.json ✅
 cierra si:   declara motivo de corte ∈ {página incompleta, tope, timeout,
              sin más páginas} ✅ · 0 IDs duplicados ✅ · 0 IDs vacíos ✅ ·
              el crudo no fue modificado después de escrito ✅ ·
-             Isidora dice que el snapshot sirve (puerta 1) ← pendiente
+             Isidora dice que el snapshot sirve (puerta 1) ✅
 ```
 
 **El `cierra si` tenía un cuarto motivo faltante.** La lista original —{página
@@ -137,7 +137,8 @@ dormitorios, guardados vacíos y declarados vacíos · m² mediana 104, mínimo 
 (un aviso con 2 m² es dato del portal, no del parseo) · UF/m² mediana 94,1 con un
 máximo de 2.000 que sale de ese mismo aviso.
 
-**→ Puerta 1.** Acá para y espera revisión del snapshot.
+**→ Puerta 1 cruzada el 2026-09-12:** Isidora revisó el snapshot y dijo que sirve.
+El censo que pasa al item 04 es el de `runs/2026-09-12-1210-2` — 1.100 avisos.
 
 ---
 
